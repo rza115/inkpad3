@@ -10,6 +10,12 @@ type UIState = {
   // id project yang lagi di-rename lewat modal, null = tidak ada
   renamingProjectId: string | null;
   setRenamingProjectId: (id: string | null) => void;
+  // Fase 2 — layout shell
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
+  // drawer MobileNav terbuka/tertutup (mobile only)
+  mobileNavOpen: boolean;
+  setMobileNavOpen: (open: boolean) => void;
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -19,4 +25,8 @@ export const useUIStore = create<UIState>((set) => ({
   setOpenProjectMenuId: (id) => set({ openProjectMenuId: id }),
   renamingProjectId: null,
   setRenamingProjectId: (id) => set({ renamingProjectId: id }),
+  sidebarCollapsed: false,
+  setSidebarCollapsed: (collapsed) => set({ sidebarCollapsed: collapsed }),
+  mobileNavOpen: false,
+  setMobileNavOpen: (open) => set({ mobileNavOpen: open }),
 }));

@@ -39,6 +39,32 @@ export async function getProjects(): Promise<Project[]> {
   return data as Project[];
 }
 
+// Satu project by id (dipakai layout shell (project)/[projectId]). RLS yang
+// memastikan hanya pemilik yang dapat baris — null kalau tak ada/deleted/bukan milik user.
+export async function getProject(id: string): Promise<Project | null> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("id", id)
+    .is("deleted_at", null)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as Project | null;
+}
+
 export async function createProject(
   _prevState: ProjectActionState,
   formData: FormData

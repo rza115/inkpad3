@@ -7,9 +7,9 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 1 — Auth & Dashboard (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 2)
+**Fase aktif:** Fase 2 — Layout Shell (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 3)
 **Progress fase ini:** 100%
-**Terakhir dikerjakan:** User selesai test manual Fase 1 (register/login/logout, redirect guard, CRUD project, RLS).
+**Terakhir dikerjakan:** User selesai test manual Fase 2 (navigasi antar section, sidebar collapse, mobile drawer, responsive).
 **Blocker/isu terbuka:** —
 
 ---
@@ -18,7 +18,7 @@
 
 - [x] **Fase 0** — Foundation (scaffold Next.js+TS+Tailwind, setup Supabase project+schema+RLS+storage bucket)
 - [x] **Fase 1** — Auth & Dashboard
-- [ ] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
+- [x] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
 - [ ] **Fase 3** — Core Writing (Editor + Outline + Version History)
 - [ ] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
 - [ ] **Fase 5** — Illustration
@@ -75,6 +75,18 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `store/useUIStore.ts` — Zustand UI state (modal create, menu terbuka, renaming id)
 - Deps tambahan: `zustand`
 
+**Fase 2:**
+- `app/(project)/[projectId]/layout.tsx` — shell per project: auth guard, fetch project (404 kalau bukan milik user/deleted), Topbar + Sidebar + content slot + MobileNav
+- `app/(project)/[projectId]/page.tsx` — redirect `/{projectId}` → `/{projectId}/outline` (di luar breakdown, disetujui user karena kartu dashboard link ke `/{projectId}`)
+- `components/layout/Sidebar.tsx` — nav desktop (md+), collapsible (icon-only w-14 ↔ w-56), export `PROJECT_NAV_ITEMS` (dipakai juga MobileNav)
+- `components/layout/SidebarNavItem.tsx` — item nav + ribbon signature element saat aktif (usePathname)
+- `components/layout/Topbar.tsx` — hamburger (mobile), link "InkPad" ke dashboard, judul project; slot actions masih placeholder
+- `components/layout/MobileNav.tsx` — drawer overlay < md, tutup otomatis saat navigate
+- `app/(project)/[projectId]/{outline,notes,characters,plot,worldbuilding,illustration,export,trash}/page.tsx` — placeholder per section biar navigasi bisa diuji
+- `lib/actions/projects.ts` — tambah `getProject(id)` (single project, `maybeSingle`, filter `deleted_at`)
+- `store/useUIStore.ts` — tambah `sidebarCollapsed` + `mobileNavOpen`
+- Keputusan: nav "Editor" TIDAK ada di sidebar Fase 2 — editor diakses lewat klik chapter di Outline (Fase 3), sesuai pilihan user.
+
 ## Log Sesi
 
 ### Sesi 1 — 2026-07-17
@@ -90,6 +102,13 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `npm run build` + ESLint hijau. RLS belum diuji lintas akun — bagian dari test manual user.
 - Nunggu user test manual (kriteria "selesai kalau" Fase 1) → setelah dikonfirmasi, centang Fase 1 dan HARD STOP menunggu izin lanjut Fase 2.
 - User selesai test manual → **Fase 1 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 2 (Layout Shell).
+
+### Sesi 3 — 2026-07-18
+- Fase 2 sisi kode selesai: shell `(project)/[projectId]` (Topbar + Sidebar collapsible + MobileNav drawer), ribbon signature element di nav item aktif, placeholder page semua section (outline/notes/characters/plot/worldbuilding/illustration/export/trash), `getProject` action, store `sidebarCollapsed`/`mobileNavOpen`.
+- Dua keputusan disetujui user: (1) `page.tsx` redirect `/{projectId}` → `/outline` (file kecil di luar breakdown), (2) tanpa nav Editor di sidebar — editor lewat Outline di Fase 3.
+- `npm run build` + ESLint hijau. Semua warna/spacing pakai token, no hardcoded hex.
+- Nunggu user test manual (kriteria "selesai kalau" Fase 2: no horizontal scroll, no overlap/ke-cut di mobile/tablet/desktop, navigasi antar section jalan) → setelah dikonfirmasi, centang Fase 2 dan HARD STOP.
+- User selesai test manual, semua jalan normal → **Fase 2 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 3 (Core Writing: Editor + Outline + Version History).
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.
