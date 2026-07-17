@@ -7,10 +7,10 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 2 — Layout Shell (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 3)
-**Progress fase ini:** 100%
-**Terakhir dikerjakan:** User selesai test manual Fase 2 (navigasi antar section, sidebar collapse, mobile drawer, responsive).
-**Blocker/isu terbuka:** —
+**Fase aktif:** Fase 3 — Core Writing (kode selesai, nunggu: user jalankan SQL `patch/fase3-versions.sql` + test manual)
+**Progress fase ini:** 90% (sisa: SQL version tables + test manual user)
+**Terakhir dikerjakan:** Editor TipTap (autosave debounced + save status + retry), Outline dnd-kit (chapter + scene, status, CRUD), Version history manual (Simpan Versi + rollback). Build + ESLint hijau.
+**Blocker/isu terbuka:** Tabel `chapter_versions`/`scene_versions` belum ada di Supabase — SQL siap di `patch/fase3-versions.sql`, nunggu user jalankan.
 
 ---
 
@@ -87,6 +87,27 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `store/useUIStore.ts` — tambah `sidebarCollapsed` + `mobileNavOpen`
 - Keputusan: nav "Editor" TIDAK ada di sidebar Fase 2 — editor diakses lewat klik chapter di Outline (Fase 3), sesuai pilihan user.
 
+**Fase 3:**
+- `lib/actions/chapters.ts` — getChapters/getChapter/create/rename/updateStatus/updateOrder/delete (soft-delete); order baru = max order + 1
+- `lib/actions/scenes.ts` — getScenes/create/updateSceneContent (autosave, TANPA revalidatePath)/updateOrder/delete (soft-delete)
+- `lib/actions/versions.ts` — getVersions/createChapterVersion/rollbackToVersion; snapshot per CHAPTER (JSON semua scene di `content_snapshot`) + record granular ke `scene_versions`; rollback restore content+order+deleted_at scene di snapshot, scene baru pasca-snapshot dibiarkan
+- `app/(project)/[projectId]/outline/page.tsx` — fetch chapters + scenes, render ChapterList
+- `components/outline/ChapterList.tsx` — dnd-kit sortable chapters, form tambah chapter, optimistic reorder (rollback kalau gagal)
+- `components/outline/ChapterListItem.tsx` — drag handle, expand scenes, rename inline, status select (draft/revisi/selesai, ribbon wine kalau selesai), delete, link ke editor
+- `components/outline/SceneDragList.tsx` — nested sortable scenes, excerpt konten, tambah/hapus scene
+- `app/(project)/[projectId]/editor/[chapterId]/page.tsx` — fetch chapter+scenes+versions, 404 kalau chapter bukan milik project
+- `components/editor/EditorCanvas.tsx` — semua scene ditumpuk satu canvas parchment (continuous view, keputusan user), satu instance TipTap per scene, max-w-2xl margin lebar
+- `components/editor/EditorToolbar.tsx` — bold/italic/strike/H2/bullet/blockquote via `editor.isActive()`, tombol "Simpan Versi" + toggle "Riwayat"
+- `components/editor/WordCountBadge.tsx` — total kata + reading time (monospace)
+- `components/editor/SaveStatusIndicator.tsx` — per scene: Tersimpan/Menyimpan…/Gagal + Coba lagi
+- `components/editor/VersionHistoryPanel.tsx` — list snapshot + rollback (confirm + router.refresh)
+- `lib/hooks/useDebouncedSave.ts` — debounce 1200ms, flush on unmount, retry terdaftar di store (reusable buat modul Fase 4)
+- `store/useEditorStore.ts` — sceneStatuses/retryCallbacks/wordCounts (UI state, bukan copy konten)
+- `app/globals.css` — tambah `.prose-inkpad` styling konten TipTap (pengecualian terdokumentasi: preflight menghapus style heading/list; nilai tetap dari token)
+- `patch/fase3-versions.sql` — SQL create `chapter_versions` + `scene_versions` + RLS (via join projects) + index. **BELUM dijalankan user.**
+- Deps tambahan: `@tiptap/react`, `@tiptap/starter-kit`, `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
+- Keputusan user Fase 3: (1) editor = scene ditumpuk satu canvas (continuous), (2) snapshot/rollback per chapter.
+
 ## Log Sesi
 
 ### Sesi 1 — 2026-07-17
@@ -109,6 +130,14 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `npm run build` + ESLint hijau. Semua warna/spacing pakai token, no hardcoded hex.
 - Nunggu user test manual (kriteria "selesai kalau" Fase 2: no horizontal scroll, no overlap/ke-cut di mobile/tablet/desktop, navigasi antar section jalan) → setelah dikonfirmasi, centang Fase 2 dan HARD STOP.
 - User selesai test manual, semua jalan normal → **Fase 2 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 3 (Core Writing: Editor + Outline + Version History).
+
+### Sesi 4 — 2026-07-18
+- Fase 3 sisi kode selesai: Outline (dnd-kit chapter+scene reorder, status, CRUD), Editor (TipTap per scene di satu canvas continuous, autosave debounced 1200ms, SaveStatusIndicator + retry, word count), Version history (snapshot manual per chapter + rollback).
+- Probe schema: `chapters`/`scenes` sudah ada & kolom sesuai (status text bebas, default 'draft'); `chapter_versions`/`scene_versions` BELUM ada → SQL disiapkan di `patch/fase3-versions.sql`.
+- Keputusan user: editor continuous view (scene ditumpuk), snapshot/rollback per chapter.
+- Fix lint: react-hooks/refs di useDebouncedSave (assign saveRef pindah ke useEffect).
+- `npm run build` + ESLint hijau.
+- Next: user jalankan `patch/fase3-versions.sql` di Supabase SQL Editor, lalu test manual kriteria Fase 3 → setelah konfirmasi, centang Fase 3, HARD STOP.
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.

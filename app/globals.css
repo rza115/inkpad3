@@ -23,3 +23,28 @@
 body {
   @apply bg-parchment font-sans text-ink antialiased;
 }
+
+/*
+ * Styling konten TipTap (.prose-inkpad) — satu-satunya pengecualian selain
+ * reset: Tailwind preflight menghapus style default heading/list/blockquote,
+ * dan konten editor adalah HTML hasil render TipTap yang tidak bisa diberi
+ * utility class per elemen. Semua nilai tetap dari token.
+ */
+.prose-inkpad p {
+  @apply my-2 leading-relaxed;
+}
+.prose-inkpad h2 {
+  @apply font-display mt-6 mb-2 text-2xl font-semibold;
+}
+.prose-inkpad h3 {
+  @apply font-display mt-4 mb-2 text-xl font-semibold;
+}
+.prose-inkpad ul {
+  @apply my-2 list-disc pl-6;
+}
+.prose-inkpad ol {
+  @apply my-2 list-decimal pl-6;
+}
+.prose-inkpad blockquote {
+  @apply border-slate/40 text-slate my-3 border-l-2 pl-4 italic;
+}
