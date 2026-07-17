@@ -7,16 +7,16 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 0 — Foundation (belum mulai)
-**Progress fase ini:** 0%
-**Terakhir dikerjakan:** —
-**Blocker/isu terbuka:** —
+**Fase aktif:** Fase 0 — Foundation (SELESAI — nunggu konfirmasi user untuk lanjut Fase 1)
+**Progress fase ini:** 100%
+**Terakhir dikerjakan:** Test koneksi Supabase lolos: read anon (RLS aktif, 0 row), signup + session, write dummy row, read balik, cleanup. Build sukses tanpa TS error.
+**Blocker/isu terbuka:** — (sisa 1 dummy user test `inkpad.test.ezhsib@gmail.com` di Authentication → Users, boleh dihapus manual kapan saja)
 
 ---
 
 ## Peta Fase (checklist)
 
-- [ ] **Fase 0** — Foundation (scaffold Next.js+TS+Tailwind, setup Supabase project+schema+RLS+storage bucket)
+- [x] **Fase 0** — Foundation (scaffold Next.js+TS+Tailwind, setup Supabase project+schema+RLS+storage bucket)
 - [ ] **Fase 1** — Auth & Dashboard
 - [ ] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
 - [ ] **Fase 3** — Core Writing (Editor + Outline + Version History)
@@ -53,11 +53,26 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 
 ## File/Struktur yang Sudah Dibuat
 
-_(kosong — belum ada file yang dibuat)_
-
----
+- `app/layout.tsx` — root layout, font Fraunces/Inter/JetBrains Mono via `next/font`
+- `app/globals.css` — Tailwind v4 `@theme` dengan design tokens (ink/parchment/wine/slate/brass + font) + reset minimal. **Catatan:** Tailwind v4 tidak pakai `tailwind.config.ts` — tokens hidup di `@theme` dalam `globals.css` (pengganti setara, bukan penyimpangan konsep).
+- `app/page.tsx` — placeholder sederhana pakai token
+- `lib/supabase/client.ts` — browser client (`createBrowserClient`)
+- `lib/supabase/server.ts` — server client (async, `cookies()` di Next 16 async)
+- `lib/supabase/middleware.ts` — helper `updateSession` refresh token
+- `proxy.ts` — **Next.js 16 me-rename Middleware jadi Proxy**; ini pengganti `middleware.ts` root di breakdown (fungsi sama)
+- `lib/types/database.ts` — placeholder, nanti di-generate `supabase gen types`
+- `.env.local` — template kosong (URL + anon key, gitignored)
+- Deps terpasang: `@supabase/supabase-js`, `@supabase/ssr`
 
 ## Log Sesi
+
+### Sesi 1 — 2026-07-17
+- `npm install` + baca docs Next.js 16.2.4 di `node_modules/next/dist/docs` (breaking: middleware.ts → proxy.ts dengan export `proxy`; `cookies()` async).
+- Fase 0 sisi kode selesai: design tokens, font, struktur `lib/supabase`, proxy, placeholder types. `npm run build` sukses tanpa TS error, tanpa custom CSS di luar `globals.css`.
+- Belum: setup project Supabase (schema 8 tabel + RLS + bucket `illustrations`) — SQL sudah diberikan ke user, nunggu user jalankan & isi `.env.local`, lalu test read/write dummy row.
+- User setup Supabase (schema 8 tabel + RLS + bucket via SQL) + isi `.env.local` + matikan "Confirm email" (untuk dev; nyalakan lagi pas production, butuh halaman konfirmasi di Fase 1).
+- Test koneksi lolos semua: read anon (0 row, RLS bekerja), signup dapat session, insert dummy project, read balik, cleanup. **Fase 0 SELESAI.**
+- Next step: konfirmasi user → Fase 1 (Auth & Dashboard).
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.

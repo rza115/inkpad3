@@ -1,26 +1,25 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * InkPad v2 design tokens (Tailwind v4: tokens hidup di @theme, pengganti
+ * tailwind.config.ts). Warna & font sesuai inkpadv2-concept.md — jangan
+ * hardcode hex/px di komponen, selalu pakai token ini.
+ */
+@theme {
+  /* Warna */
+  --color-ink: #1e1b16; /* surface gelap utama (sidebar, topbar) */
+  --color-parchment: #efe7d8; /* canvas terang area menulis */
+  --color-wine: #6b2737; /* accent utama (CTA, active state, link) */
+  --color-slate: #4a5568; /* teks sekunder, border, non-aktif */
+  --color-brass: #b8934a; /* highlight/status marker (badge, tag) */
+
+  /* Tipografi */
+  --font-display: var(--font-fraunces), Georgia, serif; /* heading/judul saja */
+  --font-sans: var(--font-inter), system-ui, sans-serif; /* body/UI */
+  --font-mono: var(--font-jetbrains-mono), monospace; /* metadata/word count */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Reset minimal */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  @apply bg-parchment font-sans text-ink antialiased;
 }
