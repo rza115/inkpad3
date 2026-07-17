@@ -1,10 +1,20 @@
-// Placeholder Fase 2 — diisi modul Notes di Fase 4.
-export default function NotesPage() {
+import { getNotes } from "@/lib/actions/notes";
+import { getChapters } from "@/lib/actions/chapters";
+import { NoteList } from "@/components/notes/NoteList";
+
+export default async function NotesPage({
+  params,
+}: PageProps<"/[projectId]/notes">) {
+  const { projectId } = await params;
+  const [notes, chapters] = await Promise.all([
+    getNotes(projectId),
+    getChapters(projectId),
+  ]);
+
   return (
-    <div className="flex h-full items-center justify-center p-6">
-      <p className="font-mono text-sm text-slate">
-        Notes — segera hadir di Fase 4
-      </p>
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 md:p-6">
+      <h2 className="font-display text-2xl font-semibold text-ink">Notes</h2>
+      <NoteList projectId={projectId} notes={notes} chapters={chapters} />
     </div>
   );
 }

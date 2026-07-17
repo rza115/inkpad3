@@ -1,10 +1,20 @@
-// Placeholder Fase 2 — diisi list recently deleted di Fase 4.
-export default function TrashPage() {
+import { getDeletedItems } from "@/lib/actions/trash";
+import { TrashList } from "@/components/trash/TrashList";
+
+export default async function TrashPage({
+  params,
+}: PageProps<"/[projectId]/trash">) {
+  const { projectId } = await params;
+  const items = await getDeletedItems(projectId);
+
   return (
-    <div className="flex h-full items-center justify-center p-6">
-      <p className="font-mono text-sm text-slate">
-        Trash — segera hadir di Fase 4
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 p-4 md:p-6">
+      <h2 className="font-display text-2xl font-semibold text-ink">Trash</h2>
+      <p className="text-sm text-slate">
+        Entitas yang dihapus dari modul manapun. Restore untuk mengembalikan,
+        atau hapus permanen (tidak bisa dibatalkan).
       </p>
+      <TrashList projectId={projectId} items={items} />
     </div>
   );
 }
