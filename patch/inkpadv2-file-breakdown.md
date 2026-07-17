@@ -300,6 +300,54 @@ tsconfig.json                <- strict: true
 
 ---
 
+## Fase 8 — Reader Mode & Theme
+
+```
+/app
+  /(project)/[projectId]
+    /read
+      layout.tsx               <- scope load font reader (next/font/google), biar gak
+                                   nambah bundle size di luar reader mode: Merriweather,
+                                   Lora (serif) + Source Sans 3, Atkinson Hyperlegible
+                                   (sans) sebagai CSS variable; Georgia web-safe langsung
+                                   font-family, gak perlu next/font
+      page.tsx                  <- scope "seluruh project": semua chapter berurutan
+      /[chapterId]
+        page.tsx                <- scope "per chapter"
+
+/components
+  /reader
+    ReaderView.tsx             <- render konten baca (bukan editor canvas), apply CSS
+                                   custom properties (--reader-bg/--reader-text/
+                                   --reader-accent/--reader-font) dari useReaderStore
+                                   lewat inline style di root
+    ReaderToolbar.tsx          <- nav prev/next chapter, tombol buka ReaderThemePanel, exit
+    ReaderThemePanel.tsx      <- preset (light/dark/sepia) + color picker custom
+                                   (bg/text/accent) + font selector
+    ReaderProgressBar.tsx      <- opsional, indikator posisi baca (scroll %)
+
+/store
+  useReaderStore.ts            <- Zustand + persist middleware (localStorage key
+                                   `inkpad-reader-theme`), siapin `version` + `migrate`
+                                   dari awal walau kosong: { preset, customColors:
+                                   {bg,text,accent}, font, lastScope }
+```
+
+**Catatan:**
+- Reader mode adalah mode *baca*, terpisah total dari Editor (TipTap) — gak ada toolbar formatting, gak ada autosave, cuma render bersih + kontrol tema.
+- Warna custom dari color picker itu runtime user data, bukan token dev-time — jadi `ReaderView` pakai Tailwind arbitrary value (`bg-[var(--reader-bg)]`) yang nunjuk ke CSS variable, bukan hex ditulis manual di komponen. Semangat "no hardcoded hex" tetep kejaga, sumbernya cuma beda (state, bukan token statis).
+- Tema reader (preset/custom/font) sengaja **gak** ngaruh ke dashboard/editor/modul lain — scope-nya cuma di dalam `/read`.
+- `useReaderStore` pakai `persist` biar tema nempel di browser yang sama setelah refresh/tutup-buka, tapi tetap Zustand di layer API-nya — konsisten sama pola store lain di project ini.
+
+**Selesai kalau:**
+- Reader render bersih tanpa elemen editor (toolbar TipTap, dll).
+- Scope chapter dan scope project dua-duanya jalan, user bisa pilih.
+- Ganti tema di reader gak ngaruh ke tampilan dashboard/editor.
+- Tema custom (warna + font) nempel setelah refresh/tutup-buka browser.
+- Ada guard kontras minimal buat kombinasi warna custom (gak sampe teks gak kebaca).
+
+---
+
 ## Prinsip yang berlaku di semua fase
 
 1. Server action dipecah per domain tabel (`chapters.ts`, `characters.ts`, dst) — jangan satu `actions.ts` isi semua.

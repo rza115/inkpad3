@@ -218,6 +218,12 @@ Setiap fase harus selesai & lolos kriteria sebelum lanjut ke fase berikutnya. Ja
 
 **Selesai kalau:** search mengembalikan hasil relevan dari semua modul (bukan cuma satu tabel), hasil ke-grup jelas per tipe, klik hasil membawa ke halaman/detail yang tepat, performa search masih responsif walau data project udah banyak.
 
+### Fase 8 — Reader Mode & Theme
+20. Reader mode: render bersih chapter/project (bukan mode edit) — user pilih scope, per chapter atau seluruh project sekaligus.
+21. Theme khusus reader: preset (light/dark/sepia) + custom (color picker: background/text/accent) + font selector (beberapa pilihan serif/sans khusus reading, terpisah dari font display/UI utama app). Preferensi disimpan lewat Zustand + `persist` middleware (localStorage), scope-nya cuma di dalam reader mode — tidak mempengaruhi tema dashboard/editor/modul lain.
+
+**Selesai kalau:** reader render bersih tanpa elemen editor (toolbar TipTap, dll), dua scope (per chapter & seluruh project) berfungsi dan user bisa pilih, ganti tema di reader tidak mempengaruhi tampilan modul lain, tema custom (warna + font) tetap tersimpan setelah refresh/tutup-buka browser, ada guard kontras minimal untuk kombinasi warna custom (mencegah teks tidak terbaca).
+
 ---
 
 ## Aturan Tambahan — Anti-Ambiguitas (v1.1)
