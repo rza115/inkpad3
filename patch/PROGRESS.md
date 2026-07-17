@@ -7,10 +7,10 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 0 — Foundation (SELESAI — nunggu konfirmasi user untuk lanjut Fase 1)
-**Progress fase ini:** 100%
-**Terakhir dikerjakan:** Test koneksi Supabase lolos: read anon (RLS aktif, 0 row), signup + session, write dummy row, read balik, cleanup. Build sukses tanpa TS error.
-**Blocker/isu terbuka:** — (sisa 1 dummy user test `inkpad.test.ezhsib@gmail.com` di Authentication → Users, boleh dihapus manual kapan saja)
+**Fase aktif:** Fase 1 — Auth & Dashboard (kode selesai, nunggu user test manual)
+**Progress fase ini:** 100% sisi kode — belum diverifikasi manual oleh user
+**Terakhir dikerjakan:** Auth (login/register/logout email+password) + dashboard grid project dengan create/rename/delete (soft-delete). Build & lint hijau.
+**Blocker/isu terbuka:** Nunggu user test manual: register/login/logout, redirect guard, CRUD project, RLS antar akun.
 
 ---
 
@@ -64,6 +64,17 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `.env.local` — template kosong (URL + anon key, gitignored)
 - Deps terpasang: `@supabase/supabase-js`, `@supabase/ssr`
 
+**Fase 1:**
+- `lib/actions/auth.ts` — signIn/signUp/signOut (server actions, pola useActionState)
+- `lib/actions/projects.ts` — getProjects/createProject/renameProject/deleteProject (delete = soft-delete `deleted_at`)
+- `app/login/page.tsx` — redirect ke `/` kalau sudah login
+- `components/auth/LoginForm.tsx` — satu form login/register toggle, email+password
+- `app/(dashboard)/page.tsx` — server component, auth guard redirect ke /login, header + grid (menggantikan `app/page.tsx` placeholder yang dihapus)
+- `components/dashboard/ProjectGrid.tsx`, `ProjectCard.tsx` (ribbon signature element), `CreateProjectModal.tsx`, `ProjectCardMenu.tsx` (dropdown rename/delete)
+- `components/ui/Button.tsx`, `Input.tsx`, `Modal.tsx` (native `<dialog>`)
+- `store/useUIStore.ts` — Zustand UI state (modal create, menu terbuka, renaming id)
+- Deps tambahan: `zustand`
+
 ## Log Sesi
 
 ### Sesi 1 — 2026-07-17
@@ -73,6 +84,11 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - User setup Supabase (schema 8 tabel + RLS + bucket via SQL) + isi `.env.local` + matikan "Confirm email" (untuk dev; nyalakan lagi pas production, butuh halaman konfirmasi di Fase 1).
 - Test koneksi lolos semua: read anon (0 row, RLS bekerja), signup dapat session, insert dummy project, read balik, cleanup. **Fase 0 SELESAI.**
 - Next step: konfirmasi user → Fase 1 (Auth & Dashboard).
+
+### Sesi 2 — 2026-07-17
+- Fase 1 sisi kode selesai: auth email/password (signIn/signUp/signOut via server actions + useActionState), login page dengan redirect guard dua arah, dashboard grid "rak buku" dengan create/rename/delete project (soft-delete), UI primitives (Button/Input/Modal), Zustand UI store.
+- `npm run build` + ESLint hijau. RLS belum diuji lintas akun — bagian dari test manual user.
+- Nunggu user test manual (kriteria "selesai kalau" Fase 1) → setelah dikonfirmasi, centang Fase 1 dan HARD STOP menunggu izin lanjut Fase 2.
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.
