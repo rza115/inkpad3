@@ -7,10 +7,10 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 4 — Story Bible (kode selesai, nunggu: user jalankan SQL `patch/fase4-relationships.sql` + test manual)
-**Progress fase ini:** 90% (sisa: SQL character_relationships + test manual user)
-**Terakhir dikerjakan:** Empat modul CRUD (Notes/Characters/Plot/Worldbuilding) + relationship map + Trash cross-modul. Build + ESLint hijau.
-**Blocker/isu terbuka:** Tabel `character_relationships` belum ada di Supabase — SQL siap di `patch/fase4-relationships.sql`, nunggu user jalankan.
+**Fase aktif:** Fase 4 — Story Bible (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 5)
+**Progress fase ini:** 100%
+**Terakhir dikerjakan:** User jalankan `patch/fase4-relationships.sql` + selesai test manual Fase 4 (CRUD 4 modul, relasi dua arah, cross-link chapter, Trash restore/permanent delete).
+**Blocker/isu terbuka:** —
 
 ---
 
@@ -20,7 +20,7 @@
 - [x] **Fase 1** — Auth & Dashboard
 - [x] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
 - [x] **Fase 3** — Core Writing (Editor + Outline + Version History)
-- [ ] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
+- [x] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
 - [ ] **Fase 5** — Illustration
 - [ ] **Fase 6** — Export & Import
 - [ ] **Fase 7** — Global Search
@@ -120,7 +120,7 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `app/(project)/[projectId]/plot/page.tsx` + `components/plot/PlotPointList.tsx` (dnd-kit reorder pola ChapterList), `PlotPointItem.tsx` (status select, link chapter, deskripsi save-on-blur)
 - `app/(project)/[projectId]/worldbuilding/page.tsx` + `components/worldbuilding/WorldbuildingList.tsx`, `WorldbuildingEntryForm.tsx` (shared create/edit), `CategoryFilter.tsx` (chip filter client-side)
 - `app/(project)/[projectId]/trash/page.tsx` + `components/trash/TrashList.tsx` (grup per tipe), `TrashItemRow.tsx` (restore + hapus permanen dengan confirm)
-- `patch/fase4-relationships.sql` — SQL create `character_relationships` + RLS via project + index + check self-relation. **BELUM dijalankan user.**
+- `patch/fase4-relationships.sql` — SQL create `character_relationships` + RLS via project + index + check self-relation. Sudah dijalankan user.
 
 ## Log Sesi
 
@@ -160,6 +160,7 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - Pola konsisten: soft-delete semua modul (kecuali relationships = hard delete, bukan entitas utama), useDebouncedSave/SaveStatusIndicator di-reuse buat Notes, form shared create/edit (CharacterForm, WorldbuildingEntryForm).
 - `npm run build` + ESLint hijau.
 - Next: user jalankan `patch/fase4-relationships.sql` di Supabase SQL Editor, lalu test manual kriteria Fase 4 → setelah konfirmasi, centang Fase 4, HARD STOP.
+- User jalankan SQL + selesai test manual, semua lolos → **Fase 4 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 5 (Illustration).
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.
