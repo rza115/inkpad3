@@ -7,17 +7,17 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 1 — Auth & Dashboard (kode selesai, nunggu user test manual)
-**Progress fase ini:** 100% sisi kode — belum diverifikasi manual oleh user
-**Terakhir dikerjakan:** Auth (login/register/logout email+password) + dashboard grid project dengan create/rename/delete (soft-delete). Build & lint hijau.
-**Blocker/isu terbuka:** Nunggu user test manual: register/login/logout, redirect guard, CRUD project, RLS antar akun.
+**Fase aktif:** Fase 1 — Auth & Dashboard (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 2)
+**Progress fase ini:** 100%
+**Terakhir dikerjakan:** User selesai test manual Fase 1 (register/login/logout, redirect guard, CRUD project, RLS).
+**Blocker/isu terbuka:** —
 
 ---
 
 ## Peta Fase (checklist)
 
 - [x] **Fase 0** — Foundation (scaffold Next.js+TS+Tailwind, setup Supabase project+schema+RLS+storage bucket)
-- [ ] **Fase 1** — Auth & Dashboard
+- [x] **Fase 1** — Auth & Dashboard
 - [ ] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
 - [ ] **Fase 3** — Core Writing (Editor + Outline + Version History)
 - [ ] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
@@ -89,6 +89,7 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - Fase 1 sisi kode selesai: auth email/password (signIn/signUp/signOut via server actions + useActionState), login page dengan redirect guard dua arah, dashboard grid "rak buku" dengan create/rename/delete project (soft-delete), UI primitives (Button/Input/Modal), Zustand UI store.
 - `npm run build` + ESLint hijau. RLS belum diuji lintas akun — bagian dari test manual user.
 - Nunggu user test manual (kriteria "selesai kalau" Fase 1) → setelah dikonfirmasi, centang Fase 1 dan HARD STOP menunggu izin lanjut Fase 2.
+- User selesai test manual → **Fase 1 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 2 (Layout Shell).
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.
