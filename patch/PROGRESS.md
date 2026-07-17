@@ -7,10 +7,10 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 3 — Core Writing (kode selesai, nunggu: user jalankan SQL `patch/fase3-versions.sql` + test manual)
-**Progress fase ini:** 90% (sisa: SQL version tables + test manual user)
-**Terakhir dikerjakan:** Editor TipTap (autosave debounced + save status + retry), Outline dnd-kit (chapter + scene, status, CRUD), Version history manual (Simpan Versi + rollback). Build + ESLint hijau.
-**Blocker/isu terbuka:** Tabel `chapter_versions`/`scene_versions` belum ada di Supabase — SQL siap di `patch/fase3-versions.sql`, nunggu user jalankan.
+**Fase aktif:** Fase 3 — Core Writing (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 4)
+**Progress fase ini:** 100%
+**Terakhir dikerjakan:** User jalankan `patch/fase3-versions.sql` + selesai test manual Fase 3 (autosave, reorder, status, save indicator, version history + rollback).
+**Blocker/isu terbuka:** —
 
 ---
 
@@ -19,7 +19,7 @@
 - [x] **Fase 0** — Foundation (scaffold Next.js+TS+Tailwind, setup Supabase project+schema+RLS+storage bucket)
 - [x] **Fase 1** — Auth & Dashboard
 - [x] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
-- [ ] **Fase 3** — Core Writing (Editor + Outline + Version History)
+- [x] **Fase 3** — Core Writing (Editor + Outline + Version History)
 - [ ] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
 - [ ] **Fase 5** — Illustration
 - [ ] **Fase 6** — Export & Import
@@ -104,7 +104,7 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `lib/hooks/useDebouncedSave.ts` — debounce 1200ms, flush on unmount, retry terdaftar di store (reusable buat modul Fase 4)
 - `store/useEditorStore.ts` — sceneStatuses/retryCallbacks/wordCounts (UI state, bukan copy konten)
 - `app/globals.css` — tambah `.prose-inkpad` styling konten TipTap (pengecualian terdokumentasi: preflight menghapus style heading/list; nilai tetap dari token)
-- `patch/fase3-versions.sql` — SQL create `chapter_versions` + `scene_versions` + RLS (via join projects) + index. **BELUM dijalankan user.**
+- `patch/fase3-versions.sql` — SQL create `chapter_versions` + `scene_versions` + RLS (via join projects) + index. Sudah dijalankan user.
 - Deps tambahan: `@tiptap/react`, `@tiptap/starter-kit`, `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/utilities`
 - Keputusan user Fase 3: (1) editor = scene ditumpuk satu canvas (continuous), (2) snapshot/rollback per chapter.
 
@@ -138,6 +138,7 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - Fix lint: react-hooks/refs di useDebouncedSave (assign saveRef pindah ke useEffect).
 - `npm run build` + ESLint hijau.
 - Next: user jalankan `patch/fase3-versions.sql` di Supabase SQL Editor, lalu test manual kriteria Fase 3 → setelah konfirmasi, centang Fase 3, HARD STOP.
+- User jalankan SQL + selesai test manual, semua lolos → **Fase 3 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 4 (Story Bible: Notes, Character, Plot, Worldbuilding, Trash).
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.
