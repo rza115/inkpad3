@@ -7,8 +7,13 @@ import type { ReaderScope } from "@/store/useReaderStore";
 type ReaderToolbarProps = {
   projectId: string;
   scope: ReaderScope;
-  chapters?: Chapter[];
-  currentChapterId?: string;
+  // Komputasi prev/next/current dihoist ke ReaderView (dipakai juga keyboard
+  // nav & footer) — toolbar tinggal render.
+  prev: Chapter | null;
+  next: Chapter | null;
+  current: Chapter | null;
+  chapterIndex: number;
+  chapterCount: number;
   onOpenThemePanel: () => void;
 };
 
@@ -17,21 +22,13 @@ type ReaderToolbarProps = {
 export function ReaderToolbar({
   projectId,
   scope,
-  chapters,
-  currentChapterId,
+  prev,
+  next,
+  current,
+  chapterIndex,
+  chapterCount,
   onOpenThemePanel,
 }: ReaderToolbarProps) {
-  const index =
-    scope === "chapter" && chapters
-      ? chapters.findIndex((c) => c.id === currentChapterId)
-      : -1;
-  const prev = index > 0 && chapters ? chapters[index - 1] : null;
-  const next =
-    index >= 0 && chapters && index < chapters.length - 1
-      ? chapters[index + 1]
-      : null;
-  const current = index >= 0 && chapters ? chapters[index] : null;
-
   const navLinkClass =
     "rounded px-2 py-1 text-sm hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--reader-accent)]";
 
@@ -52,7 +49,7 @@ export function ReaderToolbar({
         <div className="min-w-0 flex-1 text-center">
           {scope === "chapter" && current ? (
             <span className="block truncate text-sm">
-              Bab {index + 1} / {chapters!.length} — {current.title}
+              Bab {chapterIndex + 1} / {chapterCount} — {current.title}
             </span>
           ) : (
             <span className="block truncate text-sm opacity-70">
@@ -93,6 +90,7 @@ export function ReaderToolbar({
 
         <button
           type="button"
+          data-theme-trigger
           onClick={onOpenThemePanel}
           className={navLinkClass}
           aria-label="Buka pengaturan tema reader"

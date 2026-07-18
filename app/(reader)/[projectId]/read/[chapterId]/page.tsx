@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { fetchExportData } from "@/lib/actions/export";
 import { getChapters } from "@/lib/actions/chapters";
 import { ReaderView } from "@/components/reader/ReaderView";
@@ -13,8 +13,14 @@ export default async function ReadChapterPage({
     getChapters(projectId),
   ]);
 
-  if (!data || data.chapters.length === 0) {
+  // Project tidak ada → 404. Chapter tidak ada (mis. link resume basi setelah
+  // chapter dihapus) → fallback scope project; landing di sana menulis ulang
+  // lastRead di store, link sidebar sembuh permanen.
+  if (!data) {
     notFound();
+  }
+  if (data.chapters.length === 0) {
+    redirect(`/${projectId}/read`);
   }
 
   return (

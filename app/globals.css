@@ -64,3 +64,12 @@ body {
 .reader-theme .prose-inkpad h3 {
   font-family: var(--reader-font);
 }
+/* Ukuran & spasi baris pilihan user — variabel di-set inline oleh ReaderView.
+ * Heading tetap ukuran tetap: kontrol ini soal kenyamanan body text. */
+.reader-theme .prose-inkpad {
+  font-size: var(--reader-size);
+}
+.reader-theme .prose-inkpad p,
+.reader-theme .prose-inkpad li {
+  line-height: var(--reader-leading);
+}

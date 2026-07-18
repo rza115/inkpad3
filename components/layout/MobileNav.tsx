@@ -1,6 +1,7 @@
 "use client";
 
 import { useUIStore } from "@/store/useUIStore";
+import { useReadHref } from "@/lib/hooks/useReadHref";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { PROJECT_NAV_ITEMS } from "./Sidebar";
 
@@ -9,6 +10,8 @@ import { PROJECT_NAV_ITEMS } from "./Sidebar";
 export function MobileNav({ projectId }: { projectId: string }) {
   const mobileNavOpen = useUIStore((s) => s.mobileNavOpen);
   const setMobileNavOpen = useUIStore((s) => s.setMobileNavOpen);
+  // Link "Baca" resume ke chapter terakhir dibaca (lastScope di reader store).
+  const readHref = useReadHref(projectId);
 
   if (!mobileNavOpen) return null;
 
@@ -55,7 +58,9 @@ export function MobileNav({ projectId }: { projectId: string }) {
         {PROJECT_NAV_ITEMS.map((item) => (
           <SidebarNavItem
             key={item.segment}
-            href={`/${projectId}/${item.segment}`}
+            href={
+              item.segment === "read" ? readHref : `/${projectId}/${item.segment}`
+            }
             label={item.label}
             iconD={item.iconD}
             onNavigate={() => setMobileNavOpen(false)}

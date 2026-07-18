@@ -1,12 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useReaderStore,
   PRESET_COLORS,
   READER_FONTS,
+  READER_FONT_SIZES,
+  READER_LINE_HEIGHTS,
   type ReaderColors,
   type ReaderFontId,
+  type ReaderFontSize,
+  type ReaderLineHeight,
   type ReaderPreset,
 } from "@/store/useReaderStore";
 
@@ -52,9 +56,45 @@ type ReaderThemePanelProps = {
 };
 
 export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
-  const { preset, customColors, font, setPreset, setCustomColors, setFont } =
-    useReaderStore();
+  const {
+    preset,
+    customColors,
+    font,
+    fontSize,
+    lineHeight,
+    setPreset,
+    setCustomColors,
+    setFont,
+    setFontSize,
+    setLineHeight,
+  } = useReaderStore();
   const [warning, setWarning] = useState<string | null>(null);
+
+  // Panel non-modal (sengaja tanpa backdrop — user harus bisa lihat teks
+  // berubah live). Escape & klik-di-luar nutup; fokus balik ke tombol Tema.
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const t = e.target as HTMLElement;
+      // Eksklusi tombol Tema: biar kliknya toggle bersih, bukan close-lalu-reopen.
+      if (panelRef.current?.contains(t) || t.closest("[data-theme-trigger]"))
+        return;
+      onClose();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+      triggerRef.current?.focus();
+    };
+  }, [onClose]);
 
   // Nilai efektif yang lagi tampil (buat isi color input)
   const effectiveColors =
@@ -91,6 +131,8 @@ export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
 
   return (
     <div
+      ref={panelRef}
+      tabIndex={-1}
       className="fixed top-12 right-4 z-50 w-72 rounded-lg border bg-[var(--reader-bg)] p-4 text-[var(--reader-text)] shadow-lg [border-color:color-mix(in_srgb,var(--reader-text)_20%,transparent)]"
       style={{ fontFamily: "var(--font-sans)" }}
       role="dialog"
@@ -155,7 +197,7 @@ export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
       )}
 
       {/* Font */}
-      <label className="flex flex-col gap-1 text-sm">
+      <label className="mb-4 flex flex-col gap-1 text-sm">
         <span>Font</span>
         <select
           value={font}
@@ -169,6 +211,57 @@ export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
           ))}
         </select>
       </label>
+
+      {/* Tipografi: ukuran & spasi baris — segmented button gaya sama preset */}
+      <div className="mb-3 flex flex-col gap-1 text-sm">
+        <span id="reader-font-size-label">Ukuran teks</span>
+        <div
+          role="group"
+          aria-labelledby="reader-font-size-label"
+          className="flex gap-2"
+        >
+          {(Object.keys(READER_FONT_SIZES) as ReaderFontSize[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => setFontSize(s)}
+              aria-pressed={fontSize === s}
+              className={`flex-1 rounded border px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--reader-accent)] ${
+                fontSize === s
+                  ? "border-[var(--reader-accent)] font-semibold"
+                  : "[border-color:color-mix(in_srgb,var(--reader-text)_20%,transparent)] hover:opacity-70"
+              }`}
+            >
+              {READER_FONT_SIZES[s].label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-1 text-sm">
+        <span id="reader-line-height-label">Spasi baris</span>
+        <div
+          role="group"
+          aria-labelledby="reader-line-height-label"
+          className="flex gap-2"
+        >
+          {(Object.keys(READER_LINE_HEIGHTS) as ReaderLineHeight[]).map((l) => (
+            <button
+              key={l}
+              type="button"
+              onClick={() => setLineHeight(l)}
+              aria-pressed={lineHeight === l}
+              className={`flex-1 rounded border px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--reader-accent)] ${
+                lineHeight === l
+                  ? "border-[var(--reader-accent)] font-semibold"
+                  : "[border-color:color-mix(in_srgb,var(--reader-text)_20%,transparent)] hover:opacity-70"
+              }`}
+            >
+              {READER_LINE_HEIGHTS[l].label}
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

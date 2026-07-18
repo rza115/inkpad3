@@ -13,6 +13,8 @@ export type ReaderFontId =
   | "atkinson"
   | "georgia";
 export type ReaderScope = "project" | "chapter";
+export type ReaderFontSize = "s" | "m" | "l";
+export type ReaderLineHeight = "compact" | "normal" | "relaxed";
 
 export type ReaderColors = {
   bg: string;
@@ -47,11 +49,29 @@ export const READER_FONTS: Record<ReaderFontId, { label: string; family: string 
   georgia: { label: "Georgia (serif)", family: "Georgia, 'Times New Roman', serif" },
 };
 
+// Token ukuran & spasi baris — nilai hidup di store, komponen cuma pasang
+// variabel CSS. Skala kecil (3 langkah) sengaja: kontrol nyaman tanpa slider.
+export const READER_FONT_SIZES: Record<ReaderFontSize, { label: string; value: string }> = {
+  s: { label: "S", value: "0.9375rem" },
+  m: { label: "M", value: "1.0625rem" },
+  l: { label: "L", value: "1.1875rem" },
+};
+
+export const READER_LINE_HEIGHTS: Record<ReaderLineHeight, { label: string; value: string }> = {
+  compact: { label: "Rapat", value: "1.5" },
+  normal: { label: "Normal", value: "1.7" },
+  relaxed: { label: "Lega", value: "1.9" },
+};
+
 export const DEFAULT_READER_STATE = {
   preset: "sepia" as ReaderPreset,
   customColors: { ...PRESET_COLORS.sepia },
   font: "merriweather" as ReaderFontId,
+  fontSize: "m" as ReaderFontSize,
+  lineHeight: "normal" as ReaderLineHeight,
   lastScope: "project" as ReaderScope,
+  lastReadProjectId: null as string | null,
+  lastReadChapterId: null as string | null,
 };
 
 type ReaderState = typeof DEFAULT_READER_STATE & {
@@ -59,7 +79,15 @@ type ReaderState = typeof DEFAULT_READER_STATE & {
   // Caller (ReaderThemePanel) wajib validasi kontras dulu sebelum commit.
   setCustomColors: (colors: ReaderColors) => void;
   setFont: (font: ReaderFontId) => void;
-  setLastScope: (scope: ReaderScope) => void;
+  setFontSize: (fontSize: ReaderFontSize) => void;
+  setLineHeight: (lineHeight: ReaderLineHeight) => void;
+  // Atomik: scope + identitas chapter terakhir dalam satu set, supaya tidak
+  // ada state antara (scope chapter tapi chapterId basi).
+  setLastRead: (
+    scope: ReaderScope,
+    projectId: string | null,
+    chapterId: string | null
+  ) => void;
 };
 
 export const useReaderStore = create<ReaderState>()(
@@ -69,18 +97,33 @@ export const useReaderStore = create<ReaderState>()(
       setPreset: (preset) => set({ preset }),
       setCustomColors: (customColors) => set({ customColors, preset: "custom" }),
       setFont: (font) => set({ font }),
-      setLastScope: (lastScope) => set({ lastScope }),
+      setFontSize: (fontSize) => set({ fontSize }),
+      setLineHeight: (lineHeight) => set({ lineHeight }),
+      setLastRead: (scope, projectId, chapterId) =>
+        set({
+          lastScope: scope,
+          lastReadProjectId: projectId,
+          lastReadChapterId: chapterId,
+        }),
     }),
     {
       name: "inkpad-reader-theme",
-      version: 1,
-      // Identity migrate — slot disiapkan dari awal untuk perubahan shape ke depan.
-      migrate: (persisted) => persisted as ReaderState,
+      version: 2,
+      // v1 → v2: blob lama tidak punya fontSize/lineHeight/lastRead* —
+      // isi dari default, preferensi lama (warna/font) tetap utuh.
+      migrate: (persisted, version) =>
+        version < 2
+          ? { ...DEFAULT_READER_STATE, ...(persisted as object) }
+          : (persisted as ReaderState),
       partialize: (s) => ({
         preset: s.preset,
         customColors: s.customColors,
         font: s.font,
+        fontSize: s.fontSize,
+        lineHeight: s.lineHeight,
         lastScope: s.lastScope,
+        lastReadProjectId: s.lastReadProjectId,
+        lastReadChapterId: s.lastReadChapterId,
       }),
     }
   )

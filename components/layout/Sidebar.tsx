@@ -1,6 +1,7 @@
 "use client";
 
 import { useUIStore } from "@/store/useUIStore";
+import { useReadHref } from "@/lib/hooks/useReadHref";
 import { SidebarNavItem } from "./SidebarNavItem";
 
 // Daftar section per project — dipakai Sidebar (desktop) & MobileNav (drawer).
@@ -56,6 +57,8 @@ export const PROJECT_NAV_ITEMS = [
 export function Sidebar({ projectId }: { projectId: string }) {
   const sidebarCollapsed = useUIStore((s) => s.sidebarCollapsed);
   const setSidebarCollapsed = useUIStore((s) => s.setSidebarCollapsed);
+  // Link "Baca" resume ke chapter terakhir dibaca (lastScope di reader store).
+  const readHref = useReadHref(projectId);
 
   return (
     <aside
@@ -70,7 +73,9 @@ export function Sidebar({ projectId }: { projectId: string }) {
         {PROJECT_NAV_ITEMS.map((item) => (
           <SidebarNavItem
             key={item.segment}
-            href={`/${projectId}/${item.segment}`}
+            href={
+              item.segment === "read" ? readHref : `/${projectId}/${item.segment}`
+            }
             label={item.label}
             iconD={item.iconD}
             collapsed={sidebarCollapsed}
