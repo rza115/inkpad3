@@ -48,3 +48,19 @@ body {
 .prose-inkpad blockquote {
   @apply border-slate/40 text-slate my-3 border-l-2 pl-4 italic;
 }
+
+/*
+ * Reader mode (Fase 8) — pengecualian terdokumentasi dengan rationale sama
+ * seperti .prose-inkpad: konten TipTap tidak bisa diberi utility per elemen.
+ * Scoped di .reader-theme supaya tema reader tidak bocor ke modul lain.
+ * blockquote ikut variabel tema (default slate-on-ink tak terbaca di dark),
+ * heading ikut font reader pilihan user (bukan font-display app).
+ */
+.reader-theme .prose-inkpad blockquote {
+  color: color-mix(in srgb, var(--reader-text) 70%, var(--reader-bg));
+  border-color: color-mix(in srgb, var(--reader-text) 40%, transparent);
+}
+.reader-theme .prose-inkpad h2,
+.reader-theme .prose-inkpad h3 {
+  font-family: var(--reader-font);
+}

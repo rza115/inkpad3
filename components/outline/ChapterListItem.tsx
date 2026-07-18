@@ -166,6 +166,16 @@ export function ChapterListItem({
           ))}
         </select>
 
+        <Link
+          href={`/${projectId}/read/${chapter.id}`}
+          aria-label={`Baca chapter ${chapter.title}`}
+          className="rounded p-1 text-slate/60 hover:bg-ink/5 hover:text-slate focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-wine"
+        >
+          <svg aria-hidden viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="size-4">
+            <path d="M12 6.25C10 4.75 7.5 4 4 4v15c3.5 0 6 .75 8 2.25 2-1.5 4.5-2.25 8-2.25V4c-3.5 0-6 .75-8 2.25zm0 0v15" />
+          </svg>
+        </Link>
+
         <button
           type="button"
           onClick={() => setRenaming(true)}

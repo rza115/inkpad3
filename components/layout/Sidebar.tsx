@@ -37,6 +37,11 @@ export const PROJECT_NAV_ITEMS = [
     iconD: "M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm4.5 6a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM21 15l-5-5L5 21",
   },
   {
+    segment: "read",
+    label: "Baca",
+    iconD: "M12 6.25C10 4.75 7.5 4 4 4v15c3.5 0 6 .75 8 2.25 2-1.5 4.5-2.25 8-2.25V4c-3.5 0-6 .75-8 2.25zm0 0v15",
+  },
+  {
     segment: "export",
     label: "Export",
     iconD: "M12 15V3m0 0L8 7m4-4 4 4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2",

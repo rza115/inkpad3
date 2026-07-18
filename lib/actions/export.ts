@@ -6,7 +6,7 @@ import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
 export type ExportScope = 'chapter' | 'full-project';
 export type ExportFormat = 'docx' | 'pdf' | 'markdown';
 
-interface ExportChapterData {
+export interface ExportChapterData {
   id: string;
   title: string;
   order: number;
@@ -17,7 +17,7 @@ interface ExportChapterData {
   }[];
 }
 
-interface ExportProjectData {
+export interface ExportProjectData {
   title: string;
   chapters: ExportChapterData[];
 }
