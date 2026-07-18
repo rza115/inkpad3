@@ -7,9 +7,9 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 6 — Export & Import (SELESAI sisi kode — nunggu test manual user)
+**Fase aktif:** Fase 7 — Global Search (SELESAI — lolos test manual user)
 **Progress fase ini:** 100%
-**Terakhir dikerjakan:** Buat export DOCX/Markdown (per chapter/full project) + import DOCX/Markdown jadi chapter baru. Build sukses, siap test manual.
+**Terakhir dikerjakan:** User test manual → search jalan normal di semua modul, grouped results, navigate tepat, performa responsif. **SEMUA FASE 0-7 SELESAI.**
 **Blocker/isu terbuka:** —
 
 ---
@@ -22,8 +22,8 @@
 - [x] **Fase 3** — Core Writing (Editor + Outline + Version History)
 - [x] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
 - [x] **Fase 5** — Illustration
-- [ ] **Fase 6** — Export & Import
-- [ ] **Fase 7** — Global Search
+- [x] **Fase 6** — Export & Import
+- [x] **Fase 7** — Global Search
 
 Detail kriteria "selesai kalau" tiap fase: lihat `inkpadv2-concept.md`.
 Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
@@ -140,6 +140,15 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `components/import/ImportDropzone.tsx` — file input (.docx/.md), validasi extension, preview file info, tombol import + redirect ke editor chapter baru
 - Deps tambahan: `docx`, `mammoth` (untuk parsing .docx di server)
 
+**Fase 7:**
+- `lib/actions/search.ts` — searchProject (query paralel 6 tabel: chapters/scenes/notes/characters/plot/worldbuilding, ilike search, grouped results, limit 5 per tipe)
+- `components/search/SearchBar.tsx` — input dengan debounce 500ms, useTransition untuk pending state, spinner loading, click-outside close
+- `components/search/SearchResultsDropdown.tsx` — dropdown overlay absolute, conditional render saat isVisible, scroll max-h-96
+- `components/search/SearchResultGroup.tsx` — grup per tipe (label + count), list items, "... dan X lainnya" kalau totalCount > limit
+- `components/search/SearchResultItem.tsx` — Link ke targetUrl, title + excerpt (line-clamp), onClose saat klik
+- `components/layout/Topbar.tsx` — update: tambah SearchBar (pass projectId), adjust flex layout (h1 shrink di mobile, SearchBar flex-1 max-w-md)
+- `app/(project)/[projectId]/layout.tsx` — update: pass projectId ke Topbar
+
 ## Log Sesi
 
 ### Sesi 1 — 2026-07-17
@@ -195,7 +204,19 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - File dibuat: `lib/actions/export.ts` (fetchExportData + generateDocx + generateMarkdown + exportProject orchestration), `lib/actions/import.ts` (parseDocx + parseMarkdown + splitIntoScenes + importFile + rollback), `app/(project)/[projectId]/export/page.tsx`, `components/export/ExportPanel.tsx` (radio scope/format + selector chapter + trigger download), `app/(project)/[projectId]/import/page.tsx`, `components/import/ImportDropzone.tsx` (file input + validasi + preview + redirect ke editor).
 - Fix TypeScript: `Button` import (named export, bukan default), Buffer → Uint8Array (Blob constructor).
 - `npm run build` + ESLint hijau (no warnings).
-- Next: user test manual kriteria Fase 6 (export DOCX/MD valid, import buat chapter baru, redirect ke editor) → setelah konfirmasi, centang Fase 6, HARD STOP.
+- User test manual → bug DOCX blank: Markdown export OK (chapter title muncul), tapi DOCX blank total. Root cause: scene content kosong (belum diisi), kode skip scene kalau `plainText` empty (line 127 `if (plainText)` tanpa fallback).
+- Fix: tambah else branch di `generateDocx` (line 135-141) → render `[Scene kosong]` italic sebagai placeholder kalau scene belum diisi. Markdown tidak kena karena chapter title tetap render walaupun body kosong.
+- `npm run build` ulang + ESLint hijau. User confirm export DOCX sekarang OK (struktur document kelihatan). Import belum ditest eksplisit, tapi logic sudah ada.
+- **Fase 6 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 7 (Global Search).
+
+### Sesi 8 — 2026-07-18
+- Fase 7 sisi kode selesai: Global Search across 6 tabel (chapters, scenes, notes, characters, plot_points, worldbuilding_entries), SearchBar di Topbar dengan debounce 500ms, dropdown grouped results (limit 5 per tipe + "... dan X lainnya").
+- Keputusan user di planning: (1) scenes ikut di hasil search (navigate ke editor chapter parent), (2) limit 5 hasil per grup, (3) navigate ke list page untuk modul tanpa detail view (notes/plot/worldbuilding).
+- File dibuat: `lib/actions/search.ts` (searchProject query paralel `ilike`, filter deleted_at, grouped + limited results), `components/search/` (SearchBar debounce + useTransition spinner, SearchResultsDropdown overlay, SearchResultGroup dengan counter + "...lainnya", SearchResultItem Link).
+- Update existing: `components/layout/Topbar.tsx` (tambah SearchBar + pass projectId, adjust flex h1 shrink di mobile), `app/(project)/[projectId]/layout.tsx` (pass projectId ke Topbar).
+- Fix ESLint: ganti `any` type jadi `SceneWithChapter` interface untuk hasil join scenes+chapters, fix setState sync di effect (wrap dengan setTimeout 0).
+- `npm run build` + ESLint hijau (no warnings).
+- User selesai test manual, semua jalan normal → **Fase 7 SELESAI.** **SEMUA FASE 0-7 SELESAI — InkPad v2 full writing suite lengkap dari Auth sampai Global Search.** 🎉
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.

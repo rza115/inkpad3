@@ -29,7 +29,7 @@ export default async function ProjectLayout({
 
   return (
     <div className="flex h-dvh flex-col">
-      <Topbar projectTitle={project.title} />
+      <Topbar projectTitle={project.title} projectId={project.id} />
       <div className="flex min-h-0 flex-1">
         <Sidebar projectId={project.id} />
         <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>

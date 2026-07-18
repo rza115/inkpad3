@@ -131,6 +131,14 @@ export async function generateDocx(data: ExportProjectData): Promise<Buffer> {
             spacing: { after: 200 },
           })
         );
+      } else {
+        // Fallback: scene kosong
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: '[Scene kosong]', italics: true })],
+            spacing: { after: 200 },
+          })
+        );
       }
     }
   }

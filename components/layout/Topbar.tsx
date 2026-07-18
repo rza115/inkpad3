@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { useUIStore } from "@/store/useUIStore";
+import { SearchBar } from "@/components/search/SearchBar";
 
 type TopbarProps = {
   projectTitle: string;
+  projectId: string;
 };
 
-export function Topbar({ projectTitle }: TopbarProps) {
+export function Topbar({ projectTitle, projectId }: TopbarProps) {
   const setMobileNavOpen = useUIStore((s) => s.setMobileNavOpen);
 
   return (
@@ -43,9 +45,12 @@ export function Topbar({ projectTitle }: TopbarProps) {
         /
       </span>
 
-      <h1 className="min-w-0 flex-1 truncate font-display text-lg font-semibold text-parchment">
+      <h1 className="min-w-0 shrink truncate font-display text-lg font-semibold text-parchment md:flex-none">
         {projectTitle}
       </h1>
+
+      {/* Search bar — Fase 7 */}
+      <SearchBar projectId={projectId} />
 
       {/* Placeholder actions (export dll) — diisi di fase berikutnya */}
     </header>
