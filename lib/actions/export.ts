@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { Document, Packer, Paragraph, TextRun, HeadingLevel } from 'docx';
+import { Document as PDFDocument, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
 
 export type ExportScope = 'chapter' | 'full-project';
 export type ExportFormat = 'docx' | 'pdf' | 'markdown';
@@ -155,6 +156,98 @@ export async function generateDocx(data: ExportProjectData): Promise<Buffer> {
 }
 
 /**
+ * Generate PDF dari data project menggunakan @react-pdf/renderer
+ */
+export async function generatePdf(data: ExportProjectData): Promise<Buffer> {
+  const React = await import('react');
+  const { pdf } = await import('@react-pdf/renderer');
+
+  // PDF styles
+  const styles = StyleSheet.create({
+    page: {
+      paddingTop: 60,
+      paddingBottom: 60,
+      paddingHorizontal: 60,
+      fontFamily: 'Helvetica',
+      fontSize: 12,
+      lineHeight: 1.6,
+    },
+    title: {
+      fontFamily: 'Times-Roman',
+      fontSize: 24,
+      fontWeight: 'bold',
+      marginBottom: 30,
+      textAlign: 'center',
+    },
+    chapterTitle: {
+      fontFamily: 'Times-Roman',
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginTop: 24,
+      marginBottom: 12,
+    },
+    scene: {
+      marginBottom: 12,
+      textAlign: 'justify',
+    },
+    emptyScene: {
+      marginBottom: 12,
+      fontStyle: 'italic',
+      color: '#666666',
+    },
+  });
+
+  // Build document using createElement to avoid JSX
+  const sceneElements = (chapter: ExportChapterData) => {
+    return chapter.scenes.map((scene) => {
+      const plainText = scene.content
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .trim();
+
+      if (plainText) {
+        return React.createElement(
+          Text,
+          { key: scene.id, style: styles.scene },
+          plainText
+        );
+      } else {
+        return React.createElement(
+          Text,
+          { key: scene.id, style: styles.emptyScene },
+          '[Scene kosong]'
+        );
+      }
+    });
+  };
+
+  const chapterElements = data.chapters.map((chapter) => {
+    return React.createElement(
+      View,
+      { key: chapter.id },
+      React.createElement(Text, { style: styles.chapterTitle }, chapter.title),
+      ...sceneElements(chapter)
+    );
+  });
+
+  const documentElement = React.createElement(
+    PDFDocument,
+    null,
+    React.createElement(
+      Page,
+      { size: 'A4', style: styles.page },
+      React.createElement(View, null, React.createElement(Text, { style: styles.title }, data.title)),
+      ...chapterElements
+    )
+  );
+
+  // Generate PDF and convert to buffer
+  const pdfBlob = await pdf(documentElement).toBlob();
+  const arrayBuffer = await pdfBlob.arrayBuffer();
+  return Buffer.from(arrayBuffer);
+}
+
+/**
  * Generate Markdown dari data project
  */
 export async function generateMarkdown(data: ExportProjectData): Promise<string> {
@@ -181,13 +274,14 @@ export async function generateMarkdown(data: ExportProjectData): Promise<string>
 
 /**
  * Export chapter atau full project (orchestration)
+ * Binary data (DOCX/PDF) dikembalikan sebagai base64 string untuk serialization Next.js
  */
 export async function exportProject(
   projectId: string,
   scope: ExportScope,
   format: ExportFormat,
   chapterId?: string
-): Promise<{ success: boolean; filename?: string; data?: Buffer | string; error?: string }> {
+): Promise<{ success: boolean; filename?: string; data?: string; error?: string }> {
   try {
     // Fetch fresh data dari Supabase
     const data = await fetchExportData(projectId, scope, chapterId);
@@ -201,10 +295,11 @@ export async function exportProject(
 
     if (format === 'docx') {
       const buffer = await generateDocx(data);
+      // Convert buffer to base64 untuk serialization
       return {
         success: true,
         filename: `${data.title}-${scopeLabel}-${timestamp}.docx`,
-        data: buffer,
+        data: buffer.toString('base64'),
       };
     }
 
@@ -217,8 +312,17 @@ export async function exportProject(
       };
     }
 
-    // PDF belum diimplementasi (akan ditambahkan setelah DOCX/MD stabil)
-    return { success: false, error: 'PDF export not yet implemented' };
+    if (format === 'pdf') {
+      const buffer = await generatePdf(data);
+      // Convert buffer to base64 untuk serialization
+      return {
+        success: true,
+        filename: `${data.title}-${scopeLabel}-${timestamp}.pdf`,
+        data: buffer.toString('base64'),
+      };
+    }
+
+    return { success: false, error: 'Invalid export format' };
   } catch (error) {
     console.error('Export error:', error);
     return { success: false, error: 'Export failed' };

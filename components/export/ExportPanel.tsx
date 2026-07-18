@@ -36,13 +36,24 @@ export default function ExportPanel({ projectId, chapters }: ExportPanelProps) {
 
       // Trigger download
       if (result.data && result.filename) {
-        const blob =
-          typeof result.data === 'string'
-            ? new Blob([result.data], { type: 'text/markdown' })
-            : new Blob([new Uint8Array(result.data)], {
-                type:
-                  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              });
+        let blob: Blob;
+        
+        if (format === 'markdown') {
+          // Markdown adalah plain text
+          blob = new Blob([result.data], { type: 'text/markdown' });
+        } else {
+          // DOCX atau PDF datang sebagai base64 string, decode ke binary
+          const binaryString = atob(result.data);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          
+          const mimeType = format === 'pdf' 
+            ? 'application/pdf'
+            : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          blob = new Blob([bytes], { type: mimeType });
+        }
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -119,7 +130,7 @@ export default function ExportPanel({ projectId, chapters }: ExportPanelProps) {
       {/* Format selector */}
       <div className="mt-4">
         <label className="mb-2 block text-sm font-medium text-ink">Export Format</label>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2">
             <input
               type="radio"
@@ -135,6 +146,17 @@ export default function ExportPanel({ projectId, chapters }: ExportPanelProps) {
             <input
               type="radio"
               name="format"
+              value="pdf"
+              checked={format === 'pdf'}
+              onChange={(e) => setFormat(e.target.value as ExportFormat)}
+              className="h-4 w-4 accent-wine"
+            />
+            <span className="text-sm text-ink">PDF</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="radio"
+              name="format"
               value="markdown"
               checked={format === 'markdown'}
               onChange={(e) => setFormat(e.target.value as ExportFormat)}
@@ -143,9 +165,6 @@ export default function ExportPanel({ projectId, chapters }: ExportPanelProps) {
             <span className="text-sm text-ink">Markdown</span>
           </label>
         </div>
-        <p className="mt-1 text-xs text-slate">
-          PDF export coming soon — use DOCX and convert manually for now.
-        </p>
       </div>
 
       {/* Error message */}
