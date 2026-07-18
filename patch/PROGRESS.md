@@ -7,9 +7,9 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 4 — Story Bible (SELESAI — lolos test manual user, nunggu konfirmasi lanjut Fase 5)
+**Fase aktif:** Fase 5 — Illustration (SELESAI sisi kode — nunggu test manual user)
 **Progress fase ini:** 100%
-**Terakhir dikerjakan:** User jalankan `patch/fase4-relationships.sql` + selesai test manual Fase 4 (CRUD 4 modul, relasi dua arah, cross-link chapter, Trash restore/permanent delete).
+**Terakhir dikerjakan:** Buat semua komponen Fase 5 (upload, gallery, lightbox, link entity selector), integrasi dengan Supabase Storage, fix ESLint warnings.
 **Blocker/isu terbuka:** —
 
 ---
@@ -21,7 +21,7 @@
 - [x] **Fase 2** — Layout Shell (Sidebar/Topbar/responsive)
 - [x] **Fase 3** — Core Writing (Editor + Outline + Version History)
 - [x] **Fase 4** — Story Bible (Notes, Character, Plot, Worldbuilding, Trash)
-- [ ] **Fase 5** — Illustration
+- [x] **Fase 5** — Illustration
 - [ ] **Fase 6** — Export & Import
 - [ ] **Fase 7** — Global Search
 
@@ -122,6 +122,15 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `app/(project)/[projectId]/trash/page.tsx` + `components/trash/TrashList.tsx` (grup per tipe), `TrashItemRow.tsx` (restore + hapus permanen dengan confirm)
 - `patch/fase4-relationships.sql` — SQL create `character_relationships` + RLS via project + index + check self-relation. Sudah dijalankan user.
 
+**Fase 5:**
+- `lib/actions/illustrations.ts` — uploadImage (Supabase Storage + validasi 5MB + rollback kalau insert gagal), getImageUrl (signed URL 1 jam), updateIllustration (title + 3 link entity), deleteIllustration (soft-delete)
+- `app/(project)/[projectId]/illustration/page.tsx` — fetch illustrations per project, render IllustrationGallery
+- `components/illustration/IllustrationGallery.tsx` — grid + modal upload + state lightbox aktif
+- `components/illustration/IllustrationCard.tsx` — preview (next/image + signed URL), badges linked entity, menu edit/delete
+- `components/illustration/UploadDropzone.tsx` — drag-drop file (1 file, validasi client 5MB, progress upload, error handling)
+- `components/illustration/ImageLightbox.tsx` — modal full overlay, preview next/image, form edit (title + 3 link entity selector), save ke Supabase
+- `components/illustration/LinkEntitySelector.tsx` — reusable dropdown link ke character/scene/worldbuilding, fetch paralel saat mount, filter deleted_at, tampil label/excerpt
+
 ## Log Sesi
 
 ### Sesi 1 — 2026-07-17
@@ -161,6 +170,14 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `npm run build` + ESLint hijau.
 - Next: user jalankan `patch/fase4-relationships.sql` di Supabase SQL Editor, lalu test manual kriteria Fase 4 → setelah konfirmasi, centang Fase 4, HARD STOP.
 - User jalankan SQL + selesai test manual, semua lolos → **Fase 4 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 5 (Illustration).
+
+### Sesi 6 — 2026-07-18
+- Fase 5 sisi kode selesai: Illustration upload/gallery/lightbox dengan integrasi Supabase Storage (signed URL, validasi 5MB), link multi-entity (character/scene/worldbuilding) via LinkEntitySelector reusable, soft-delete konsisten.
+- File dibuat: `lib/actions/illustrations.ts` (uploadImage ke Storage + rollback kalau insert gagal, getImageUrl signed URL, update/delete), `app/(project)/[projectId]/illustration/page.tsx`, `components/illustration/` (IllustrationGallery, IllustrationCard, UploadDropzone drag-drop, ImageLightbox dengan form edit, LinkEntitySelector fetch dari 3 modul).
+- `lib/actions/trash.ts` sudah include illustrations dari Fase 4 — tidak perlu diubah.
+- Fix ESLint: ganti `<img>` jadi `next/image` untuk optimasi LCP (IllustrationCard + ImageLightbox).
+- `npm run build` + ESLint hijau (no warnings).
+- Next: user test manual kriteria Fase 5 (upload gambar, gallery tampil, link ke entity, Trash restore) → setelah konfirmasi, centang Fase 5, HARD STOP.
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.

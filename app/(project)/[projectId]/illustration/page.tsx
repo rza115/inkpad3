@@ -1,10 +1,18 @@
-// Placeholder Fase 2 — diisi gallery illustration di Fase 5.
-export default function IllustrationPage() {
+import { getIllustrations } from "@/lib/actions/illustrations";
+import { IllustrationGallery } from "@/components/illustration/IllustrationGallery";
+
+export default async function IllustrationPage({
+  params,
+}: PageProps<"/[projectId]/illustration">) {
+  const { projectId } = await params;
+  const illustrations = await getIllustrations(projectId);
+
   return (
-    <div className="flex h-full items-center justify-center p-6">
-      <p className="font-mono text-sm text-slate">
-        Illustration — segera hadir di Fase 5
-      </p>
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 p-4 md:p-6">
+      <h2 className="font-display text-2xl font-semibold text-ink">
+        Illustrations
+      </h2>
+      <IllustrationGallery projectId={projectId} illustrations={illustrations} />
     </div>
   );
 }
