@@ -7,9 +7,9 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 5 — Illustration (SELESAI sisi kode — nunggu test manual user)
+**Fase aktif:** Fase 6 — Export & Import (SELESAI sisi kode — nunggu test manual user)
 **Progress fase ini:** 100%
-**Terakhir dikerjakan:** Buat semua komponen Fase 5 (upload, gallery, lightbox, link entity selector), integrasi dengan Supabase Storage, fix ESLint warnings.
+**Terakhir dikerjakan:** Buat export DOCX/Markdown (per chapter/full project) + import DOCX/Markdown jadi chapter baru. Build sukses, siap test manual.
 **Blocker/isu terbuka:** —
 
 ---
@@ -131,6 +131,15 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `components/illustration/ImageLightbox.tsx` — modal full overlay, preview next/image, form edit (title + 3 link entity selector), save ke Supabase
 - `components/illustration/LinkEntitySelector.tsx` — reusable dropdown link ke character/scene/worldbuilding, fetch paralel saat mount, filter deleted_at, tampil label/excerpt
 
+**Fase 6:**
+- `lib/actions/export.ts` — fetchExportData (fresh dari Supabase saat trigger), generateDocx (via `docx` library), generateMarkdown (manual templating), exportProject (orchestration per scope + format)
+- `lib/actions/import.ts` — parseDocx (via `mammoth`), parseMarkdown (strip frontmatter), splitIntoScenes (2+ newlines), importFile (create chapter + scenes + rollback kalau gagal)
+- `app/(project)/[projectId]/export/page.tsx` — fetch chapters untuk selector, render ExportPanel
+- `components/export/ExportPanel.tsx` — radio scope (full-project/chapter) + format (docx/markdown), dropdown chapter, tombol export + trigger download via Blob
+- `app/(project)/[projectId]/import/page.tsx` — render ImportDropzone
+- `components/import/ImportDropzone.tsx` — file input (.docx/.md), validasi extension, preview file info, tombol import + redirect ke editor chapter baru
+- Deps tambahan: `docx`, `mammoth` (untuk parsing .docx di server)
+
 ## Log Sesi
 
 ### Sesi 1 — 2026-07-17
@@ -176,8 +185,17 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - File dibuat: `lib/actions/illustrations.ts` (uploadImage ke Storage + rollback kalau insert gagal, getImageUrl signed URL, update/delete), `app/(project)/[projectId]/illustration/page.tsx`, `components/illustration/` (IllustrationGallery, IllustrationCard, UploadDropzone drag-drop, ImageLightbox dengan form edit, LinkEntitySelector fetch dari 3 modul).
 - `lib/actions/trash.ts` sudah include illustrations dari Fase 4 — tidak perlu diubah.
 - Fix ESLint: ganti `<img>` jadi `next/image` untuk optimasi LCP (IllustrationCard + ImageLightbox).
+- Fix `next.config.ts`: tambah `images.remotePatterns` untuk whitelist hostname Supabase Storage (error next/image unconfigured host).
 - `npm run build` + ESLint hijau (no warnings).
-- Next: user test manual kriteria Fase 5 (upload gambar, gallery tampil, link ke entity, Trash restore) → setelah konfirmasi, centang Fase 5, HARD STOP.
+- User selesai test manual, semua lolos (upload, gallery, link entity, dropdown menu edit/delete, trash restore) → **Fase 5 SELESAI.** HARD STOP, nunggu konfirmasi eksplisit untuk Fase 6 (Export & Import).
+
+### Sesi 7 — 2026-07-18
+- Fase 6 sisi kode selesai: Export DOCX/Markdown (per chapter/full project, fetch fresh dari Supabase saat trigger, download via Blob) + Import DOCX/Markdown jadi chapter baru (parsing via mammoth/manual, split scenes by 2+ newlines, rollback kalau gagal).
+- Install deps: `docx` (generate DOCX), `mammoth` (parse DOCX di server), keduanya via npm.
+- File dibuat: `lib/actions/export.ts` (fetchExportData + generateDocx + generateMarkdown + exportProject orchestration), `lib/actions/import.ts` (parseDocx + parseMarkdown + splitIntoScenes + importFile + rollback), `app/(project)/[projectId]/export/page.tsx`, `components/export/ExportPanel.tsx` (radio scope/format + selector chapter + trigger download), `app/(project)/[projectId]/import/page.tsx`, `components/import/ImportDropzone.tsx` (file input + validasi + preview + redirect ke editor).
+- Fix TypeScript: `Button` import (named export, bukan default), Buffer → Uint8Array (Blob constructor).
+- `npm run build` + ESLint hijau (no warnings).
+- Next: user test manual kriteria Fase 6 (export DOCX/MD valid, import buat chapter baru, redirect ke editor) → setelah konfirmasi, centang Fase 6, HARD STOP.
 
 ### Sesi 0 — [tanggal diisi pas mulai]
 - Belum mulai coding. Konsep (`inkpadv2-concept.md`) dan file breakdown (`inkpadv2-file-breakdown.md`) sudah final.
