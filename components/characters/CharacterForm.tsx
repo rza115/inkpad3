@@ -23,6 +23,13 @@ export function CharacterForm({
   const [description, setDescription] = useState(character?.description ?? "");
   const [role, setRole] = useState<CharacterRole>(character?.role ?? "side");
   const [arcNotes, setArcNotes] = useState(character?.arc_notes ?? "");
+  // Aliases diedit sebagai string dipisah koma, di-parse jadi array saat submit.
+  const [aliasesText, setAliasesText] = useState(
+    character?.aliases.join(", ") ?? ""
+  );
+  const [quickSummary, setQuickSummary] = useState(
+    character?.quick_summary ?? ""
+  );
   const [error, setError] = useState<string | null>(null);
   const [savedMsg, setSavedMsg] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -30,7 +37,17 @@ export function CharacterForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     startTransition(async () => {
-      const fields = { name, description, role, arc_notes: arcNotes };
+      const fields = {
+        name,
+        description,
+        role,
+        arc_notes: arcNotes,
+        aliases: aliasesText
+          .split(",")
+          .map((a) => a.trim())
+          .filter(Boolean),
+        quick_summary: quickSummary,
+      };
       const result = character
         ? await updateCharacter(character.id, projectId, fields)
         : await createCharacter(projectId, fields);
@@ -44,6 +61,8 @@ export function CharacterForm({
           setDescription("");
           setRole("side");
           setArcNotes("");
+          setAliasesText("");
+          setQuickSummary("");
         } else {
           setSavedMsg(true);
           setTimeout(() => setSavedMsg(false), 3000);
@@ -67,6 +86,14 @@ export function CharacterForm({
         onChange={(e) => setName(e.target.value)}
         placeholder="Nama karakter…"
         required
+        disabled={isPending}
+      />
+
+      <Input
+        label="Alias (pisahkan dengan koma)"
+        value={aliasesText}
+        onChange={(e) => setAliasesText(e.target.value)}
+        placeholder="Na, Nay…"
         disabled={isPending}
       />
 
@@ -106,6 +133,24 @@ export function CharacterForm({
           disabled={isPending}
           className="w-full resize-y rounded border border-slate/40 bg-parchment px-3 py-2 text-sm leading-relaxed text-ink placeholder:text-slate/60 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-wine"
         />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-sm font-medium text-slate">
+          Ringkasan singkat (untuk popover referensi)
+        </span>
+        <textarea
+          value={quickSummary}
+          onChange={(e) => setQuickSummary(e.target.value)}
+          rows={2}
+          maxLength={140}
+          placeholder="1–2 kalimat ringkasan…"
+          disabled={isPending}
+          className="w-full resize-y rounded border border-slate/40 bg-parchment px-3 py-2 text-sm leading-relaxed text-ink placeholder:text-slate/60 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-wine"
+        />
+        <span className="self-end font-mono text-xs text-slate/70">
+          {140 - quickSummary.length} karakter tersisa
+        </span>
       </label>
 
       <div className="flex items-center gap-3">

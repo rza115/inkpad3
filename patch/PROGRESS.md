@@ -7,9 +7,9 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 7 — Global Search (SELESAI — lolos test manual user)
-**Progress fase ini:** 100%
-**Terakhir dikerjakan:** User test manual → search jalan normal di semua modul, grouped results, navigate tepat, performa responsif. **SEMUA FASE 0-7 SELESAI.**
+**Fase aktif:** Fase 9 — Entity Cross-Reference (SELESAI — lolos test manual user; Step 9 Reader Mode opsional belum dikerjakan)
+**Progress fase ini:** 100% (core Step 1–8). Step 9 (entity reference di Reader Mode) = opsional, bisa dikerjakan terpisah nanti.
+**Terakhir dikerjakan:** User test manual checklist Fase 9 → semua lolos (underline otomatis, hover popover, word boundary, rename, fallback summary, export bersih).
 **Blocker/isu terbuka:** —
 
 ---
@@ -24,6 +24,7 @@
 - [x] **Fase 5** — Illustration
 - [x] **Fase 6** — Export & Import
 - [x] **Fase 7** — Global Search
+- [x] **Fase 9** — Entity Cross-Reference (hover/tap reference ke Characters & Worldbuilding — detail: `patch/fase9-entity-reference.md`; Step 9 Reader Mode opsional belum dikerjakan)
 
 Detail kriteria "selesai kalau" tiap fase: lihat `inkpadv2-concept.md`.
 Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
@@ -149,7 +150,27 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `components/layout/Topbar.tsx` — update: tambah SearchBar (pass projectId), adjust flex layout (h1 shrink di mobile, SearchBar flex-1 max-w-md)
 - `app/(project)/[projectId]/layout.tsx` — update: pass projectId ke Topbar
 
+**Fase 9:**
+- `patch/fase9-entity-reference.sql` — kolom `aliases text[]` + `quick_summary text` di characters & worldbuilding_entries. Sudah dijalankan user.
+- `lib/editor/entityIndex.ts` — buildEntityIndex (+ fallback summary 140 char) + findEntityMatches (case-insensitive, word boundary Unicode-aware, longest-match-wins, character > worldbuilding saat tie)
+- `components/editor/extensions/entityReference.ts` — Tiptap Extension decoration inline class `ref` + data-attributes, recompute hanya docChanged, command updateEntityIndex
+- `components/editor/EntityRefPopover.tsx` — popover fixed dari rect span, flip/clamp viewport, badge + nama + ringkasan (token ink/parchment/brass)
+- Update: `lib/actions/characters.ts` + `worldbuilding.ts` (field aliases + quick_summary), `CharacterForm` + `WorldbuildingEntryForm` (input alias comma-separated + quick_summary 140 char + counter), `store/useEditorStore.ts` (activeEntityRef + entityIndex), `EditorCanvas.tsx` (wiring extension + event delegation hover + long-press 450ms touch), editor page (fetch characters+worldbuilding), `globals.css` (CSS `.prose-inkpad .ref`)
+
 ## Log Sesi
+
+### Sesi 9 — 2026-07-19
+- Fase 9 (Entity Cross-Reference) selesai, Step 1–8 per `patch/fase9-entity-reference.md`, stop-and-test tiap step:
+- **Step 1:** `patch/fase9-entity-reference.sql` — kolom `aliases text[]` + `quick_summary text` di `characters` & `worldbuilding_entries`. Dijalankan user di Supabase SQL Editor.
+- **Step 2:** type `Character`/`WorldbuildingEntry` + dua field baru; create/update actions terima & simpan (aliases trim per item + buang kosong, quick_summary trim).
+- **Step 3:** `CharacterForm` + `WorldbuildingEntryForm` — input alias comma-separated (parse ke array saat submit) + textarea quick_summary maxLength 140 dengan counter sisa karakter.
+- **Step 4:** `lib/editor/entityIndex.ts` — `buildEntityIndex` (termasuk fallback summary: 140 char pertama description/content, potong di word boundary + …) + `findEntityMatches` (case-insensitive, word boundary Unicode-aware `\p{L}\p{N}` bukan `\b`, longest-match-wins via claim range, tie → character menang atas worldbuilding sebagai tiebreak eksplisit di sort). Smoke test 9 kasus Bahasa Indonesia (tanda pisah —, kutip, substring "kebulanan") semua PASS.
+- **Step 5:** `components/editor/extensions/entityReference.ts` — Tiptap Extension + ProseMirror Plugin, `Decoration.inline` class `ref` + data-entity-id/type, recompute hanya `tr.docChanged` (selain itu map mapping), command `updateEntityIndex` refresh tanpa remount (meta flag), skip node `spec.code`. Scan per textblock (bukan per text node) supaya nama kepotong mark bold/italic tetap match.
+- **Step 6:** `store/useEditorStore.ts` — `activeEntityRef` (entityId/entityType/rect) + `entityIndex` + setters, ikut dibersihkan `resetEditorState`.
+- **Step 7:** `components/editor/EntityRefPopover.tsx` — satu instance, position fixed dari rect via useLayoutEffect (flip ke bawah kalau kepotong atas, clamp horizontal), badge kategori + nama font-display + ringkasan, token bg-ink/text-parchment/brass, pointer-events-none.
+- **Step 8:** editor page fetch characters+worldbuilding di Promise.all → props EditorCanvas; useMemo entityIndex → store; extension terpasang sejajar StarterKit; event delegation di wrapper canvas (mouseOver/Out + closest('.ref')); touch long-press 450ms IKUT diimplementasi (pointerdown+setTimeout, batal di up/move/cancel, class `.open`, guard pointerType touch); popover tutup saat scroll; CSS `.ref` di globals.css (underline dotted slate/45 → wine saat hover/open, via @apply token).
+- `npm run build` + `tsc --noEmit` + ESLint hijau di tiap step.
+- User test manual checklist Fase 9 → semua lolos → **Fase 9 SELESAI.** Step 9 (Reader Mode: wrap HTML string `scene.content` dengan span `.ref` pakai `findEntityMatches` yang sama, tap biasa karena read-only) = opsional, belum dikerjakan — bisa sesi terpisah.
 
 ### Sesi 1 — 2026-07-17
 - `npm install` + baca docs Next.js 16.2.4 di `node_modules/next/dist/docs` (breaking: middleware.ts → proxy.ts dengan export `proxy`; `cookies()` async).

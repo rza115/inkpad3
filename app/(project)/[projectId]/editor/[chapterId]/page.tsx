@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { getChapter } from "@/lib/actions/chapters";
 import { getScenes } from "@/lib/actions/scenes";
 import { getVersions } from "@/lib/actions/versions";
+import { getCharacters } from "@/lib/actions/characters";
+import { getWorldbuildingEntries } from "@/lib/actions/worldbuilding";
 import { EditorCanvas } from "@/components/editor/EditorCanvas";
 
 export default async function EditorPage({
@@ -14,9 +16,11 @@ export default async function EditorPage({
     notFound();
   }
 
-  const [scenes, versions] = await Promise.all([
+  const [scenes, versions, characters, worldbuilding] = await Promise.all([
     getScenes(chapterId),
     getVersions(chapterId),
+    getCharacters(projectId),
+    getWorldbuildingEntries(projectId),
   ]);
 
   return (
@@ -25,6 +29,8 @@ export default async function EditorPage({
       chapter={chapter}
       scenes={scenes}
       versions={versions}
+      characters={characters}
+      worldbuilding={worldbuilding}
     />
   );
 }

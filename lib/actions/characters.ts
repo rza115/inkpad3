@@ -12,6 +12,8 @@ export type Character = {
   description: string;
   role: CharacterRole;
   arc_notes: string;
+  aliases: string[];
+  quick_summary: string;
   created_at: string;
   deleted_at: string | null;
 };
@@ -70,6 +72,8 @@ export async function createCharacter(
     description: string;
     role: CharacterRole;
     arc_notes: string;
+    aliases: string[];
+    quick_summary: string;
   }
 ): Promise<CharacterActionResult> {
   const supabase = await requireUser();
@@ -84,6 +88,8 @@ export async function createCharacter(
     description: fields.description,
     role: fields.role,
     arc_notes: fields.arc_notes,
+    aliases: fields.aliases.map((a) => a.trim()).filter(Boolean),
+    quick_summary: fields.quick_summary.trim(),
   });
 
   if (error) {
@@ -102,6 +108,8 @@ export async function updateCharacter(
     description: string;
     role: CharacterRole;
     arc_notes: string;
+    aliases: string[];
+    quick_summary: string;
   }
 ): Promise<CharacterActionResult> {
   const supabase = await requireUser();
@@ -117,6 +125,8 @@ export async function updateCharacter(
       description: fields.description,
       role: fields.role,
       arc_notes: fields.arc_notes,
+      aliases: fields.aliases.map((a) => a.trim()).filter(Boolean),
+      quick_summary: fields.quick_summary.trim(),
     })
     .eq("id", id);
 

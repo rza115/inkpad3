@@ -9,6 +9,8 @@ export type WorldbuildingEntry = {
   category: string;
   title: string;
   content: string;
+  aliases: string[];
+  quick_summary: string;
   created_at: string;
   deleted_at: string | null;
 };
@@ -47,7 +49,13 @@ export async function getWorldbuildingEntries(
 
 export async function createWorldbuildingEntry(
   projectId: string,
-  fields: { title: string; category: string; content: string }
+  fields: {
+    title: string;
+    category: string;
+    content: string;
+    aliases: string[];
+    quick_summary: string;
+  }
 ): Promise<WorldbuildingActionResult> {
   const supabase = await requireUser();
 
@@ -63,6 +71,8 @@ export async function createWorldbuildingEntry(
     title: fields.title.trim(),
     category: fields.category.trim(),
     content: fields.content,
+    aliases: fields.aliases.map((a) => a.trim()).filter(Boolean),
+    quick_summary: fields.quick_summary.trim(),
   });
 
   if (error) {
@@ -76,7 +86,13 @@ export async function createWorldbuildingEntry(
 export async function updateWorldbuildingEntry(
   id: string,
   projectId: string,
-  fields: { title: string; category: string; content: string }
+  fields: {
+    title: string;
+    category: string;
+    content: string;
+    aliases: string[];
+    quick_summary: string;
+  }
 ): Promise<WorldbuildingActionResult> {
   const supabase = await requireUser();
 
@@ -93,6 +109,8 @@ export async function updateWorldbuildingEntry(
       title: fields.title.trim(),
       category: fields.category.trim(),
       content: fields.content,
+      aliases: fields.aliases.map((a) => a.trim()).filter(Boolean),
+      quick_summary: fields.quick_summary.trim(),
     })
     .eq("id", id);
 

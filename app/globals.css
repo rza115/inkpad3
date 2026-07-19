@@ -50,6 +50,20 @@ body {
 }
 
 /*
+ * Fase 9: entity reference — span decoration ProseMirror (class dari
+ * Decoration.inline, tidak bisa diberi utility per elemen; rationale sama
+ * seperti .prose-inkpad). Underline dotted tipis, wine saat hover/aktif.
+ * .ref.open = state long-press aktif di touch device (setara :hover).
+ */
+.prose-inkpad .ref {
+  @apply decoration-slate/45 cursor-pointer underline decoration-dotted underline-offset-2;
+}
+.prose-inkpad .ref:hover,
+.prose-inkpad .ref.open {
+  @apply decoration-wine;
+}
+
+/*
  * Reader mode (Fase 8) — pengecualian terdokumentasi dengan rationale sama
  * seperti .prose-inkpad: konten TipTap tidak bisa diberi utility per elemen.
  * Scoped di .reader-theme supaya tema reader tidak bocor ke modul lain.
