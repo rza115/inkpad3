@@ -8,9 +8,13 @@ const DEBOUNCE_MS = 1200;
 // Debounced autosave ke Supabase — reusable (editor sekarang, Notes/Character
 // dst nanti). Status (saving/saved/failed) dilaporkan ke useEditorStore untuk
 // SaveStatusIndicator; retry terdaftar di store juga biar logic gak duplikat.
+// onSaved (opsional) dipanggil setelah save SUKSES dengan konten yang barusan
+// tersimpan — dipakai Fase 11 buat reconciliation orphaned inline notes,
+// numpang siklus autosave yang sama (bukan debounce terpisah).
 export function useDebouncedSave(
   id: string,
-  save: (id: string, content: string) => Promise<{ error: string | null }>
+  save: (id: string, content: string) => Promise<{ error: string | null }>,
+  onSaved?: (content: string) => void
 ) {
   const setStatus = useEditorStore((s) => s.setSceneStatus);
   const registerRetry = useEditorStore((s) => s.registerRetry);
@@ -22,6 +26,10 @@ export function useDebouncedSave(
   useEffect(() => {
     saveRef.current = save;
   }, [save]);
+  const onSavedRef = useRef(onSaved);
+  useEffect(() => {
+    onSavedRef.current = onSaved;
+  }, [onSaved]);
 
   const doSave = useCallback(async () => {
     const content = pendingRef.current;
@@ -39,6 +47,8 @@ export function useDebouncedSave(
           pendingRef.current = null;
         }
         setStatus(id, "saved");
+        // Reconciliation dkk — best effort, jangan sampai gagalin status save.
+        onSavedRef.current?.(content);
       }
     } catch {
       setStatus(id, "failed");

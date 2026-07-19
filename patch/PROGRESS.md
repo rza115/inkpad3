@@ -7,10 +7,10 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 10 — Perataan Teks Reader Mode (sisi kode selesai, nunggu test manual user)
-**Progress fase ini:** Semua perubahan selesai satu jalan (scope kecil, pola simetris fontSize/lineHeight). Build + tsc + ESLint hijau.
-**Terakhir dikerjakan:** textAlign di useReaderStore (persist v3 + migrate), CSS `--reader-align` di globals.css, ReaderView pasang variabel, ReaderThemePanel blok "Perataan teks" grid 2×2.
-**Blocker/isu terbuka:** Nunggu user test manual checklist Fase 10 (lihat `patch/fase10-reader-text-align.md` bagian 3).
+**Fase aktif:** Fase 11 — Inline Margin Note (sisi kode selesai, nunggu user jalankan SQL + test manual)
+**Progress fase ini:** Step 1–8 sisi kode selesai per `patch/fase11-inline-notes.md`. Build + tsc + ESLint hijau. Export constraint (Section 2) + reconciliation logic sudah diverifikasi via test string otomatis (semua PASS).
+**Terakhir dikerjakan:** EditorCanvas rewrite (marker margin desktop / inline mobile dari getBoundingClientRect, event delegation, reconciliation numpang autosave), SelectionToolbar, NotePopover, NoteBottomSheet, mark `inlineNote`, server actions, store `activeNoteRef`.
+**Blocker/isu terbuka:** (1) User WAJIB jalankan `patch/fase11-inline-notes.sql` di Supabase SQL Editor dulu. (2) Test manual checklist Step 8 (interaktif: select→toolbar→marker→popover/sheet, resize desktop↔mobile, reload persist, export docx/PDF/md buka hasil). Fase 10 masih nunggu test manual user juga (belum di-centang).
 
 ---
 
@@ -158,7 +158,29 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - `components/editor/EntityRefPopover.tsx` — popover fixed dari rect span, flip/clamp viewport, badge + nama + ringkasan (token ink/parchment/brass)
 - Update: `lib/actions/characters.ts` + `worldbuilding.ts` (field aliases + quick_summary), `CharacterForm` + `WorldbuildingEntryForm` (input alias comma-separated + quick_summary 140 char + counter), `store/useEditorStore.ts` (activeEntityRef + entityIndex), `EditorCanvas.tsx` (wiring extension + event delegation hover + long-press 450ms touch), editor page (fetch characters+worldbuilding), `globals.css` (CSS `.prose-inkpad .ref`)
 
+**Fase 11 (sisi kode selesai, nunggu SQL + test manual user):**
+- `patch/fase11-inline-notes.sql` — tabel `inline_notes` (id/scene_id/content/created_at) + index scene_id + RLS via join scene→chapter→projects (pola PERSIS `scene_versions` Fase 3, bukan pola baru). **Belum dijalankan user.**
+- `lib/actions/inlineNotes.ts` — getInlineNotes/createInlineNote (return row buat noteId mark)/deleteInlineNote/deleteOrphanedInlineNotes. Hard delete (bukan entitas utama, tak masuk Trash — pola relationships), tanpa revalidatePath (pola updateSceneContent).
+- `components/editor/extensions/inlineNote.ts` — TipTap **Mark** (bukan Decoration — isinya manual, harus persisten ke HTML), attr `noteId`, renderHTML `<span data-note-id>` + content hole `0` (TANPA teks/child tambahan — constraint export Section 2), parseHTML `span[data-note-id]`, command `setInlineNote`/`unsetInlineNoteById`.
+- `components/editor/SelectionToolbar.tsx` — floating toolbar di atas selection non-empty (coordsAtPos), tombol "Tambah catatan" → input inline-expand → submit. (Elemen UI baru, belum ada sebelumnya.)
+- `components/editor/NotePopover.tsx` (desktop md+, fixed dari rect, tombol Hapus/Tutup) + `NoteBottomSheet.tsx` (mobile <md, slide dari bawah + backdrop). Satu `activeNoteRef` di store, dua presentasi dipilih via breakpoint CSS (`md:block`/`md:hidden`, pola MobileNav).
+- Update: `store/useEditorStore.ts` (`activeNoteRef` {noteId/sceneId/content/quotedText/rect} + setter, ikut resetEditorState — dipisah dari activeEntityRef, keputusan paling simpel karena Fase 9 sudah jalan), `lib/hooks/useDebouncedSave.ts` (param opsional `onSaved(content)` buat reconciliation numpang siklus autosave — bukan debounce terpisah), `EditorCanvas.tsx` (rewrite: notesByScene state + editor registry, handleCreateNote/OpenNote/DeleteNote/Reconcile, marker margin desktop + inline mobile dari getBoundingClientRect via rAF, event delegation klik marker), editor page (fetch getInlineNotes paralel per scene → map sceneId→notes), `globals.css` (CSS `.prose-inkpad [data-note-id]` tint brass/18 + box-decoration-break, indikator murni CSS/React, bukan karakter di HTML).
+- Verifikasi otomatis: strip-export (regex `/<[^>]*>/g` PERSIS export.ts) atas 5 kasus mark (termasuk kepecah bold, em-dash, kutip) → tidak ada karakter nyempil (semua PASS); extractNoteIds + deteksi orphan reconciliation (semua PASS).
+
 ## Log Sesi
+
+### Sesi 11 — 2026-07-19
+- Fase 11 (Inline Margin Note) sisi kode selesai, Step 1–8 per `patch/fase11-inline-notes.md`:
+- **Step 1:** `patch/fase11-inline-notes.sql` — tabel `inline_notes` + index + RLS via join scene→chapter→projects (copy pola `scene_versions` Fase 3, tidak nebak). **Nunggu user jalankan di Supabase.**
+- **Step 2:** `lib/actions/inlineNotes.ts` — pola notes.ts/plot.ts (requireUser guard). createInlineNote return row penuh (butuh id buat mark). Hard delete + tanpa revalidatePath (keputusan: bukan entitas utama/tak masuk Trash + UI client-side, sama updateSceneContent).
+- **Step 3:** mark `inlineNote` (Mark, BUKAN Decoration — isi manual harus persisten ke HTML beda dari Fase 9 yang computed). renderHTML span bare + content hole `0`, tidak ada teks/ikon tambahan (constraint export Section 2). Command setInlineNote + unsetInlineNoteById (buat Hapus).
+- **Step 4:** `activeNoteRef` di store (noteId/sceneId/content/quotedText/rect). Dipisah dari activeEntityRef, bukan disatukan — keputusan paling simpel karena Fase 9 sudah shipped, refactor popover-nya = risiko regresi tanpa untung.
+- **Step 5:** `SelectionToolbar.tsx` (baru) — muncul dari coordsAtPos saat selection non-empty, tombol "Tambah catatan" → input inline-expand. Submit → createInlineNote → `setInlineNote(noteId)` apply mark ke selection.
+- **Step 6:** reconciliation numpang autosave lewat param `onSaved` opsional di useDebouncedSave (bukan debounce baru, sesuai instruksi). Tiap save sukses: extractNoteIds dari HTML final → deleteOrphanedInlineNotes.
+- **Step 7:** EditorCanvas rewrite — marker = elemen React (button) diposisikan dari getBoundingClientRect tiap span [data-note-id] (via rAF, recompute on transaction + resize), BUKAN karakter di scene.content. Desktop: kolom margin kanan (`md:block`, -right-7). Mobile: ikon inline kanan (`md:hidden`). Klik marker → activeNoteRef → NotePopover (desktop) / NoteBottomSheet (mobile), pilih via breakpoint CSS. Tint brass/18 via CSS `[data-note-id]` (beda visual dari dotted `.ref` Fase 9).
+- **Step 8:** test interaktif = tugas user (butuh SQL jalan + Supabase). Yang bisa otomatis SUDAH diverifikasi: (a) **export constraint** — strip `/<[^>]*>/g` persis export.ts atas 5 kasus mark (kepecah bold, em-dash, kutip, bungkus paragraf) → nol karakter nyempil, semua PASS; (b) reconciliation extractNoteIds + deteksi orphan → semua PASS.
+- `npm run build` + `tsc --noEmit` + ESLint hijau (fix: rAF buat hindari lint set-state-in-effect saat ukur rect marker).
+- **Nunggu user:** jalankan `patch/fase11-inline-notes.sql` → test manual Step 8 (interaktif + buka hasil export 3 format). HARD STOP sebelum dinyatakan selesai.
 
 ### Sesi 10 — 2026-07-19
 - Fase 10 (Perataan Teks Reader Mode) sisi kode selesai satu jalan per `patch/fase10-reader-text-align.md`:

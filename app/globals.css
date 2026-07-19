@@ -64,6 +64,21 @@ body {
 }
 
 /*
+ * Fase 11: inline margin note — mark <span data-note-id> PERSISTEN di
+ * scene.content (beda dari .ref Fase 9 yang Decoration non-persisten).
+ * Tint brass sengaja beda visual dari .ref (dotted underline) biar dua fitur
+ * tidak ketuker. WAJIB via CSS attribute selector — TIDAK ada karakter/ikon
+ * sebagai text content di dalam span (lihat fase11-inline-notes.md Section 2:
+ * export strip tag, text content ikut kebawa). Marker & ikon = elemen React
+ * terpisah, bukan di sini.
+ */
+.prose-inkpad [data-note-id] {
+  @apply rounded-[2px] bg-brass/18;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/*
  * Reader mode (Fase 8) — pengecualian terdokumentasi dengan rationale sama
  * seperti .prose-inkpad: konten TipTap tidak bisa diberi utility per elemen.
  * Scoped di .reader-theme supaya tema reader tidak bocor ke modul lain.

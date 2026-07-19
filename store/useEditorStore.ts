@@ -13,6 +13,18 @@ export type ActiveEntityRef = {
   rect: DOMRect; // posisi span yang di-hover/tap, buat positioning popover
 } | null;
 
+// Fase 11: inline note yang lagi dibuka (klik marker / tap ikon inline).
+// Dipisah dari activeEntityRef (bukan disatukan) — Fase 9 sudah jalan & beda
+// perilaku (hover vs klik, popover read-only vs ada tombol Hapus). rect =
+// posisi span [data-note-id] buat positioning popover desktop.
+export type ActiveNoteRef = {
+  noteId: string;
+  sceneId: string; // scene tempat mark ini — buat strip mark saat Hapus
+  content: string;
+  quotedText: string; // kutipan teks asli, ditampilkan di popover/bottom sheet
+  rect: DOMRect;
+} | null;
+
 type EditorState = {
   sceneStatuses: Record<string, SaveStatus>;
   setSceneStatus: (sceneId: string, status: SaveStatus) => void;
@@ -27,6 +39,9 @@ type EditorState = {
   setEntityIndex: (index: EntityRef[]) => void;
   activeEntityRef: ActiveEntityRef;
   setActiveEntityRef: (ref: ActiveEntityRef) => void;
+  // Fase 11: inline note yang lagi dibuka + setter (pola sama activeEntityRef).
+  activeNoteRef: ActiveNoteRef;
+  setActiveNoteRef: (ref: ActiveNoteRef) => void;
   // dipanggil pas unmount halaman editor, biar state gak bocor antar chapter
   resetEditorState: () => void;
 };
@@ -45,6 +60,8 @@ export const useEditorStore = create<EditorState>((set) => ({
   setEntityIndex: (index) => set({ entityIndex: index }),
   activeEntityRef: null,
   setActiveEntityRef: (ref) => set({ activeEntityRef: ref }),
+  activeNoteRef: null,
+  setActiveNoteRef: (ref) => set({ activeNoteRef: ref }),
   resetEditorState: () =>
     set({
       sceneStatuses: {},
@@ -52,5 +69,6 @@ export const useEditorStore = create<EditorState>((set) => ({
       wordCounts: {},
       entityIndex: [],
       activeEntityRef: null,
+      activeNoteRef: null,
     }),
 }));
