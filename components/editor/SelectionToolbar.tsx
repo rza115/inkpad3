@@ -98,8 +98,16 @@ export function SelectionToolbar({ editor, onCreate }: SelectionToolbarProps) {
       // -translate biar toolbar duduk di atas-tengah selection.
       style={{ position: "fixed", top: box.top, left: box.left }}
       className="z-50 -translate-x-1/2 -translate-y-[calc(100%+8px)]"
-      // Jangan biar mousedown di toolbar nge-blur/collapse selection editor.
-      onMouseDown={(e) => e.preventDefault()}
+      // Jangan biar mousedown di toolbar nge-blur/collapse selection editor —
+      // KECUALI di input: default mousedown pada input = fokus + taruh caret.
+      // Handler ini di container dan event bubble dari child, jadi tanpa
+      // pengecualian ini klik ke input ikut ke-preventDefault → fokus tak
+      // pernah masuk ke input → ketikan tidak masuk (bug fix, lihat
+      // patch/prompt-fix-selection-toolbar-focus.md).
+      onMouseDown={(e) => {
+        const target = e.target as HTMLElement;
+        if (!target.closest("input")) e.preventDefault();
+      }}
     >
       {!expanded ? (
         <button
