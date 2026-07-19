@@ -262,6 +262,8 @@ function NoteIcon() {
   );
 }
 
+const LONG_PRESS_MS = 450;
+
 type EditorCanvasProps = {
   projectId: string;
   chapter: Chapter;
@@ -286,6 +288,7 @@ export function EditorCanvas({
   const [deleting, setDeleting] = useState(false);
   const resetEditorState = useEditorStore((s) => s.resetEditorState);
   const setEntityIndex = useEditorStore((s) => s.setEntityIndex);
+  const setActiveEntityRef = useEditorStore((s) => s.setActiveEntityRef);
   const setActiveNoteRef = useEditorStore((s) => s.setActiveNoteRef);
   const activeNoteRef = useEditorStore((s) => s.activeNoteRef);
 
@@ -374,6 +377,91 @@ export function EditorCanvas({
     [setActiveNoteRef]
   );
 
+  // ── Fase 9: entity reference popover (hover desktop + long-press touch) ──
+  // Wiring ini dipertahankan dari sebelum rewrite Fase 11. Span target = teks
+  // ber-class `.ref` (Decoration entityReference), independen dari marker note
+  // (elemen React <button> terpisah) — `closest(".ref")` tak salah nangkap.
+  const longPressTimer = useRef<number | null>(null);
+  const openSpanRef = useRef<HTMLElement | null>(null);
+  // Guard: mouseover sintetis pasca-tap di touch device jangan buka popover.
+  const lastPointerWasTouch = useRef(false);
+
+  function openEntityPopover(span: HTMLElement, viaTouch: boolean) {
+    const entityId = span.dataset.entityId;
+    const entityType = span.dataset.entityType;
+    if (
+      !entityId ||
+      (entityType !== "character" && entityType !== "worldbuilding")
+    ) {
+      return;
+    }
+    if (viaTouch) {
+      openSpanRef.current?.classList.remove("open");
+      span.classList.add("open");
+      openSpanRef.current = span;
+    }
+    setActiveEntityRef({
+      entityId,
+      entityType,
+      rect: span.getBoundingClientRect(),
+    });
+  }
+
+  function closeEntityPopover() {
+    openSpanRef.current?.classList.remove("open");
+    openSpanRef.current = null;
+    setActiveEntityRef(null);
+  }
+
+  function cancelLongPress() {
+    if (longPressTimer.current !== null) {
+      window.clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }
+
+  // Event delegation di wrapper canvas (bukan per-span) — lebih murah
+  // daripada attach listener ke tiap span decoration.
+  function handleMouseOver(e: React.MouseEvent) {
+    if (lastPointerWasTouch.current) return;
+    const span = (e.target as HTMLElement).closest<HTMLElement>(".ref");
+    if (span) openEntityPopover(span, false);
+  }
+
+  function handleMouseOut(e: React.MouseEvent) {
+    if (lastPointerWasTouch.current) return;
+    const span = (e.target as HTMLElement).closest<HTMLElement>(".ref");
+    if (!span) return;
+    // Masih di dalam span yang sama (pindah antar text node) → biarkan.
+    if (span.contains(e.relatedTarget as Node | null)) return;
+    closeEntityPopover();
+  }
+
+  function handlePointerDown(e: React.PointerEvent) {
+    lastPointerWasTouch.current = e.pointerType === "touch";
+    if (e.pointerType !== "touch") return;
+
+    cancelLongPress();
+    const span = (e.target as HTMLElement).closest<HTMLElement>(".ref");
+    if (!span) {
+      // Tap di luar span .ref → tutup popover entity yang lagi kebuka.
+      closeEntityPopover();
+      return;
+    }
+    longPressTimer.current = window.setTimeout(() => {
+      longPressTimer.current = null;
+      openEntityPopover(span, true);
+    }, LONG_PRESS_MS);
+  }
+
+  // Scroll → tutup dua-duanya (entity + note): keduanya position:fixed dari
+  // rect, jadi kalau tidak ditutup posisinya jadi stale. Plain function seperti
+  // handler entity lain (tak perlu referential stability buat onScroll).
+  function closeAll() {
+    closeEntityPopover();
+    closeNote();
+  }
+
   // Hapus note dari popover/sheet: hapus row DB + strip mark dari editornya +
   // buang dari state lokal.
   const handleDeleteNote = useCallback(async () => {
@@ -407,7 +495,16 @@ export function EditorCanvas({
       />
 
       <div className="flex min-h-0 flex-1">
-        <div className="min-w-0 flex-1 overflow-y-auto" onScroll={closeNote}>
+        <div
+          className="min-w-0 flex-1 overflow-y-auto"
+          onScroll={closeAll}
+          onMouseOver={handleMouseOver}
+          onMouseOut={handleMouseOut}
+          onPointerDown={handlePointerDown}
+          onPointerUp={cancelLongPress}
+          onPointerMove={cancelLongPress}
+          onPointerCancel={cancelLongPress}
+        >
           <div className="mx-auto w-full max-w-2xl px-6 py-8 md:px-10 md:py-12">
             <h2 className="mb-6 font-display text-3xl font-semibold text-ink">
               {chapter.title}
