@@ -15,6 +15,7 @@ export type ReaderFontId =
 export type ReaderScope = "project" | "chapter";
 export type ReaderFontSize = "s" | "m" | "l";
 export type ReaderLineHeight = "compact" | "normal" | "relaxed";
+export type ReaderTextAlign = "left" | "center" | "right" | "justify";
 
 export type ReaderColors = {
   bg: string;
@@ -63,12 +64,25 @@ export const READER_LINE_HEIGHTS: Record<ReaderLineHeight, { label: string; valu
   relaxed: { label: "Lega", value: "1.9" },
 };
 
+// Perataan paragraf — scoped Reader Mode saja, tidak menyentuh Editor.
+// "Tengah"/"Kanan" kurang lazim untuk body paragraf panjang (readability),
+// lebih relevan buat kutipan pendek/puisi/gaya eksperimental — tetap
+// disediakan tanpa dibatasi, user yang tentukan sendiri per project.
+export const READER_TEXT_ALIGNS: Record<ReaderTextAlign, { label: string }> = {
+  left: { label: "Kiri" },
+  center: { label: "Tengah" },
+  right: { label: "Kanan" },
+  justify: { label: "Rata Kanan-Kiri" },
+};
+
 export const DEFAULT_READER_STATE = {
   preset: "sepia" as ReaderPreset,
   customColors: { ...PRESET_COLORS.sepia },
   font: "merriweather" as ReaderFontId,
   fontSize: "m" as ReaderFontSize,
   lineHeight: "normal" as ReaderLineHeight,
+  // Default kiri: perilaku existing user tidak berubah pas fitur ini rilis.
+  textAlign: "left" as ReaderTextAlign,
   lastScope: "project" as ReaderScope,
   lastReadProjectId: null as string | null,
   lastReadChapterId: null as string | null,
@@ -81,6 +95,7 @@ type ReaderState = typeof DEFAULT_READER_STATE & {
   setFont: (font: ReaderFontId) => void;
   setFontSize: (fontSize: ReaderFontSize) => void;
   setLineHeight: (lineHeight: ReaderLineHeight) => void;
+  setTextAlign: (textAlign: ReaderTextAlign) => void;
   // Atomik: scope + identitas chapter terakhir dalam satu set, supaya tidak
   // ada state antara (scope chapter tapi chapterId basi).
   setLastRead: (
@@ -99,6 +114,7 @@ export const useReaderStore = create<ReaderState>()(
       setFont: (font) => set({ font }),
       setFontSize: (fontSize) => set({ fontSize }),
       setLineHeight: (lineHeight) => set({ lineHeight }),
+      setTextAlign: (textAlign) => set({ textAlign }),
       setLastRead: (scope, projectId, chapterId) =>
         set({
           lastScope: scope,
@@ -108,11 +124,12 @@ export const useReaderStore = create<ReaderState>()(
     }),
     {
       name: "inkpad-reader-theme",
-      version: 2,
-      // v1 → v2: blob lama tidak punya fontSize/lineHeight/lastRead* —
-      // isi dari default, preferensi lama (warna/font) tetap utuh.
+      version: 3,
+      // v1 → v2: blob lama tidak punya fontSize/lineHeight/lastRead*;
+      // v2 → v3: tambah textAlign — sama-sama isi dari default, preferensi
+      // lama tetap utuh.
       migrate: (persisted, version) =>
-        version < 2
+        version < 3
           ? { ...DEFAULT_READER_STATE, ...(persisted as object) }
           : (persisted as ReaderState),
       partialize: (s) => ({
@@ -121,6 +138,7 @@ export const useReaderStore = create<ReaderState>()(
         font: s.font,
         fontSize: s.fontSize,
         lineHeight: s.lineHeight,
+        textAlign: s.textAlign,
         lastScope: s.lastScope,
         lastReadProjectId: s.lastReadProjectId,
         lastReadChapterId: s.lastReadChapterId,

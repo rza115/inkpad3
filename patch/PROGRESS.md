@@ -7,10 +7,10 @@
 
 ## Status Sekarang
 
-**Fase aktif:** Fase 9 — Entity Cross-Reference (SELESAI — lolos test manual user; Step 9 Reader Mode opsional belum dikerjakan)
-**Progress fase ini:** 100% (core Step 1–8). Step 9 (entity reference di Reader Mode) = opsional, bisa dikerjakan terpisah nanti.
-**Terakhir dikerjakan:** User test manual checklist Fase 9 → semua lolos (underline otomatis, hover popover, word boundary, rename, fallback summary, export bersih).
-**Blocker/isu terbuka:** —
+**Fase aktif:** Fase 10 — Perataan Teks Reader Mode (sisi kode selesai, nunggu test manual user)
+**Progress fase ini:** Semua perubahan selesai satu jalan (scope kecil, pola simetris fontSize/lineHeight). Build + tsc + ESLint hijau.
+**Terakhir dikerjakan:** textAlign di useReaderStore (persist v3 + migrate), CSS `--reader-align` di globals.css, ReaderView pasang variabel, ReaderThemePanel blok "Perataan teks" grid 2×2.
+**Blocker/isu terbuka:** Nunggu user test manual checklist Fase 10 (lihat `patch/fase10-reader-text-align.md` bagian 3).
 
 ---
 
@@ -25,6 +25,7 @@
 - [x] **Fase 6** — Export & Import
 - [x] **Fase 7** — Global Search
 - [x] **Fase 9** — Entity Cross-Reference (hover/tap reference ke Characters & Worldbuilding — detail: `patch/fase9-entity-reference.md`; Step 9 Reader Mode opsional belum dikerjakan)
+- [ ] **Fase 10** — Perataan Teks Reader Mode (kiri/tengah/kanan/justify — detail: `patch/fase10-reader-text-align.md`)
 
 Detail kriteria "selesai kalau" tiap fase: lihat `inkpadv2-concept.md`.
 Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
@@ -158,6 +159,15 @@ Detail struktur file tiap fase: lihat `inkpadv2-file-breakdown.md`.
 - Update: `lib/actions/characters.ts` + `worldbuilding.ts` (field aliases + quick_summary), `CharacterForm` + `WorldbuildingEntryForm` (input alias comma-separated + quick_summary 140 char + counter), `store/useEditorStore.ts` (activeEntityRef + entityIndex), `EditorCanvas.tsx` (wiring extension + event delegation hover + long-press 450ms touch), editor page (fetch characters+worldbuilding), `globals.css` (CSS `.prose-inkpad .ref`)
 
 ## Log Sesi
+
+### Sesi 10 — 2026-07-19
+- Fase 10 (Perataan Teks Reader Mode) sisi kode selesai satu jalan per `patch/fase10-reader-text-align.md`:
+- `store/useReaderStore.ts` — type `ReaderTextAlign` + `READER_TEXT_ALIGNS` (Kiri/Tengah/Kanan/Rata Kanan-Kiri), `textAlign: "left"` di default (perilaku existing tidak berubah), setter, partialize, **persist version 2 → 3** dengan migrate `version < 3` → merge default (pola sama v1→v2).
+- `app/globals.css` — `.reader-theme .prose-inkpad p { text-align: var(--reader-align) }`. Sengaja blok terpisah dari aturan `line-height` yang sudah ada karena selector-nya beda (line-height juga target `li`; text-align hanya `p` supaya separator ⁂/heading/li tidak ikut kegeser).
+- `components/reader/ReaderView.tsx` — `--reader-align: textAlign` di object style root (destructure sejajar font/fontSize/lineHeight, ikut guard hydration).
+- `components/reader/ReaderThemePanel.tsx` — blok "Perataan teks" setelah "Spasi baris", pola segmented button sama (role=group, aria-pressed, aria-labelledby). Dipakai **grid 2×2** (opsi fallback yang diantisipasi dokumen): label "Rata Kanan-Kiri" kepanjangan untuk 4 tombol sebaris di panel w-72.
+- `npm run build` + `tsc --noEmit` + ESLint hijau.
+- Nunggu user test manual checklist Fase 10 (live preview 4 opsi, persist reload, migrate v2 tanpa error, editor tidak terpengaruh, separator ⁂ tetap center).
 
 ### Sesi 9 — 2026-07-19
 - Fase 9 (Entity Cross-Reference) selesai, Step 1–8 per `patch/fase9-entity-reference.md`, stop-and-test tiap step:

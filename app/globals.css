@@ -87,3 +87,8 @@ body {
 .reader-theme .prose-inkpad li {
   line-height: var(--reader-leading);
 }
+/* Perataan paragraf (Fase 10) — hanya p; separator ⁂/heading tetap center
+ * masing-masing, li tidak ikut biar bullet tidak aneh saat justify. */
+.reader-theme .prose-inkpad p {
+  text-align: var(--reader-align);
+}

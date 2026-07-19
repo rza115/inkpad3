@@ -44,9 +44,8 @@ export function ReaderView({
   const hydrated = useHydrated();
 
   const store = useReaderStore();
-  const { preset, customColors, font, fontSize, lineHeight } = hydrated
-    ? store
-    : DEFAULT_READER_STATE;
+  const { preset, customColors, font, fontSize, lineHeight, textAlign } =
+    hydrated ? store : DEFAULT_READER_STATE;
   const setLastRead = store.setLastRead;
 
   useEffect(() => {
@@ -105,6 +104,7 @@ export function ReaderView({
           "--reader-font": READER_FONTS[font].family,
           "--reader-size": READER_FONT_SIZES[fontSize].value,
           "--reader-leading": READER_LINE_HEIGHTS[lineHeight].value,
+          "--reader-align": textAlign,
         } as React.CSSProperties
       }
     >

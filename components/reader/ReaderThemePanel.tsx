@@ -7,11 +7,13 @@ import {
   READER_FONTS,
   READER_FONT_SIZES,
   READER_LINE_HEIGHTS,
+  READER_TEXT_ALIGNS,
   type ReaderColors,
   type ReaderFontId,
   type ReaderFontSize,
   type ReaderLineHeight,
   type ReaderPreset,
+  type ReaderTextAlign,
 } from "@/store/useReaderStore";
 
 // --- Contrast guard (WCAG relative luminance) ---------------------------------
@@ -62,11 +64,13 @@ export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
     font,
     fontSize,
     lineHeight,
+    textAlign,
     setPreset,
     setCustomColors,
     setFont,
     setFontSize,
     setLineHeight,
+    setTextAlign,
   } = useReaderStore();
   const [warning, setWarning] = useState<string | null>(null);
 
@@ -238,7 +242,7 @@ export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
         </div>
       </div>
 
-      <div className="flex flex-col gap-1 text-sm">
+      <div className="mb-3 flex flex-col gap-1 text-sm">
         <span id="reader-line-height-label">Spasi baris</span>
         <div
           role="group"
@@ -258,6 +262,33 @@ export function ReaderThemePanel({ onClose }: ReaderThemePanelProps) {
               }`}
             >
               {READER_LINE_HEIGHTS[l].label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Perataan teks — grid 2×2 (bukan flex satu baris): label
+          "Rata Kanan-Kiri" kepanjangan buat 4 tombol sebaris di panel w-72 */}
+      <div className="flex flex-col gap-1 text-sm">
+        <span id="reader-text-align-label">Perataan teks</span>
+        <div
+          role="group"
+          aria-labelledby="reader-text-align-label"
+          className="grid grid-cols-2 gap-2"
+        >
+          {(Object.keys(READER_TEXT_ALIGNS) as ReaderTextAlign[]).map((a) => (
+            <button
+              key={a}
+              type="button"
+              onClick={() => setTextAlign(a)}
+              aria-pressed={textAlign === a}
+              className={`rounded border px-2 py-1.5 text-xs focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[var(--reader-accent)] ${
+                textAlign === a
+                  ? "border-[var(--reader-accent)] font-semibold"
+                  : "[border-color:color-mix(in_srgb,var(--reader-text)_20%,transparent)] hover:opacity-70"
+              }`}
+            >
+              {READER_TEXT_ALIGNS[a].label}
             </button>
           ))}
         </div>
